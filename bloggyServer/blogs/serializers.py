@@ -23,15 +23,26 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ["id", "category"]
 
 
+class CommentSerializer(serializers.ModelSerializer):
+    blog_id = serializers.IntegerField(write_only=True)
+
+    user = UserProfileSerializer(read_only=True)
+    user_id = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = Comment
+        fields = ["id", "blog_id", "user_id", "user", "comment", "date"]
+
+
 class BlogSerializer(serializers.ModelSerializer):
     user = UserProfileSerializer(read_only=True)
     user_id = serializers.IntegerField(write_only=True)
 
     category = CategorySerializer(read_only=True)
-    category_id = CategorySerializer(write_only=True)
+    category_id = serializers.IntegerField(write_only=True)
 
     class Meta:
-        model: Blog
+        model = Blog
         fields = [
             "id",
             "user_id",
@@ -42,14 +53,3 @@ class BlogSerializer(serializers.ModelSerializer):
             "content",
             "date",
         ]
-
-
-class CommentSerializer(serializers.ModelSerializer):
-    blog_id = serializers.IntegerField(write_only=True)
-
-    user = UserProfileSerializer(read_only=True)
-    user_id = serializers.IntegerField(write_only=True)
-
-    class Meta:
-        model: Comment
-        fields = ["id", "blog_id", "user_id", "user", "comment", "date"]

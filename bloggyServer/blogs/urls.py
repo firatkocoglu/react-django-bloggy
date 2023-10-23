@@ -1,15 +1,19 @@
 from django.urls import path, include
 
-from rest_framework import routers
+from rest_framework_nested import routers
 
-from .views import login_view, logout_view, CategoryViewSet
+from .views import login_view, logout_view, CategoryViewSet, BlogViewSet, CommentViewSet
 
-router = routers.DefaultRouter()
-router.register(r"category", CategoryViewSet, basename="category")
+router = routers.DefaultRouter(trailing_slash=False)
+router.register(r"categories", CategoryViewSet, basename="category")
+router.register(r"blogs", BlogViewSet, basename="blog")
 
+blog_router = routers.NestedDefaultRouter(router, r"blogs", lookup="blog")
+blog_router.register(r"comments", CommentViewSet, basename="blog-comments")
 
 urlpatterns = [
     path("login/", login_view, name="login-view"),
     path("logout/", logout_view, name="logout-view"),
     path("", include(router.urls)),
+    path("", include(blog_router.urls)),
 ]

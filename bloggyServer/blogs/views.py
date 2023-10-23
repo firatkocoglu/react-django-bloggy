@@ -6,14 +6,13 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.permissions import IsAuthenticated
 
 # IMPORT MODELS
-from .models import UserProfile, Category, Blog, Comment
+from .models import Category, Blog, Comment
 
 # IMPORT SERIALIZERS
 from .serializers import (
-    UserProfileSerializer,
     CategorySerializer,
     BlogSerializer,
     CommentSerializer,
@@ -57,8 +56,6 @@ def login_view(request):
 @api_view(["GET"])
 @csrf_exempt
 def logout_view(request):
-    print(request.user)
-
     # IF UNAUTHENTICATED USERS REQUEST TO LOGOUT
     if not request.user.is_authenticated:
         return Response(
@@ -130,10 +127,104 @@ class CategoryViewSet(ModelViewSet):
 
 
 # BLOG OPERATIONS VIEWS
+class BlogViewSet(ModelViewSet):
+    permission_classes = [IsAuthenticated]
+
+    def retrieve(self, request, pk):
+        blog = get_object_or_404(Blog, id=pk)
+        serialized_blog = BlogSerializer(blog)
+        return Response(serialized_blog.data, status=status.HTTP_200_OK)
+
+    def list(self, request):
+        blog_list = Blog.objects.all()
+        serialized_blogs = BlogSerializer(blog_list, many=True)
+        return Response(serialized_blogs.data, status=status.HTTP_200_OK)
+
+    def create(self, request):
+        blog_data = {"user_id": request.user.id, **request.data.dict()}
+        serialized_blog = BlogSerializer(data=blog_data)
+        serialized_blog.is_valid(raise_exception=True)
+        serialized_blog.save()
+        return Response(serialized_blog.data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, pk):
+        blog = get_object_or_404(Blog, id=pk)
+        if blog.user.id == request.user.id:
+            serialized_blog = BlogSerializer(blog, request.data, partial=True)
+            serialized_blog.is_valid(raise_exception=True)
+            self.perform_update(serialized_blog)
+            return Response(serialized_blog.data, status=status.HTTP_200_OK)
+        else:
+            return Response(
+                {"detail": "You do not have permission to do this action."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+    def destroy(self, request, pk):
+        blog = get_object_or_404(Blog, id=pk)
+        if blog.user.id == request.user.id:
+            self.perform_destroy(blog)
+            return Response(
+                {"detail": "Blog successfully deleted."}, status=status.HTTP_200_OK
+            )
+        else:
+            return Response(
+                {"detail": "You do not have permission to do this action."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
 
 # BLOG OPERATIONS VIEWS
 
 
 # COMMENT OPERATIONS VIEWS
+class CommentViewSet(ModelViewSet):
+    def retrieve(self, request, blog_pk, pk):
+        comment = get_object_or_404(Comment, id=pk)
+        serialized_comment = CommentSerializer(comment)
+        return Response(serialized_comment.data, status=status.HTTP_200_OK)
+
+    def list(self, request, blog_pk):
+        comments = Comment.objects.filter(blog_id=blog_pk)
+        serialized_comments = CommentSerializer(comments, many=True)
+        return Response(serialized_comments.data, status=status.HTTP_200_OK)
+
+    def create(self, request, blog_pk):
+        comment_data = {
+            "user_id": request.user.id,
+            "blog_id": blog_pk,
+            **request.data.dict(),
+        }
+        serialized_comment = CommentSerializer(data=comment_data)
+        serialized_comment.is_valid(raise_exception=True)
+        serialized_comment.save()
+        return Response(serialized_comment.data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, blog_pk, pk):
+        comment = get_object_or_404(Comment, id=pk)
+        if comment.user.id == request.user.id:
+            serialized_comment = CommentSerializer(comment, request.data, partial=True)
+            serialized_comment.is_valid(raise_exception=True)
+            self.perform_update(serialized_comment)
+            return Response(serialized_comment.data, status=status.HTTP_200_OK)
+        else:
+            return Response(
+                {"detail": "You do not have permissions to do this action"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+    def destroy(self, request, blog_pk, pk):
+        comment = get_object_or_404(Comment, id=pk)
+        if comment.user.id == request.user.id:
+            self.perform_destroy(comment)
+            return Response(
+                {"detail": "Comment successfully deleted."}, status=status.HTTP_200_OK
+            )
+        else:
+            return Response(
+                {"detail": "You do not have permissions to do this action"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
 
 # COMMENT OPERATIONS VIEWS

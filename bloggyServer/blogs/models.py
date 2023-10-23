@@ -23,11 +23,14 @@ class Blog(models.Model):
     category = models.ForeignKey(Category, on_delete=models.PROTECT)
     title = models.CharField(max_length=255)
     content = models.TextField()
-    date = models.DateField(blank=True, default=now)
+    date = models.DateTimeField(blank=True, default=now)
+
+    def __str__(self):
+        return self.title
 
 
 class Comment(models.Model):
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     blog = models.ForeignKey(Blog, on_delete=models.CASCADE)
     comment = models.TextField()
-    date = models.DateField(blank=True, default=now)
+    date = models.DateTimeField(blank=True, default=now)
