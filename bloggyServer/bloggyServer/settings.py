@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from corsheaders.defaults import default_headers
 
 load_dotenv()
 
@@ -135,11 +136,6 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-CORS_ALLOW_CREDENTIALS = True
-
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-]
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -148,3 +144,15 @@ REST_FRAMEWORK = {
 }
 
 AUTH_USER_MODEL = "blogs.UserProfile"
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOWED_ORIGINS = ["http://127.0.0.1:5173", "http://localhost:5173"]
+
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    "X-CSRFTOKEN",
+]
+
+CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:5173", "http://localhost:5173"]
+
+CORS_ORIGIN_WHITELIST = ["http://127.0.0.1:5173", "http://localhost:5173"]

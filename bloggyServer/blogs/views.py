@@ -1,6 +1,9 @@
 from django.shortcuts import get_object_or_404
+from django.http import JsonResponse, response
 from django.contrib.auth import authenticate, login, logout
-from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from django.middleware.csrf import get_token
+from django.middleware import csrf
 
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -9,19 +12,19 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 
 # IMPORT MODELS
-from .models import Category, Blog, Comment
+from .models import Category, Blog, Comment, UserProfile
 
 # IMPORT SERIALIZERS
 from .serializers import (
     CategorySerializer,
     BlogSerializer,
     CommentSerializer,
+    UserProfileSerializer,
 )
 
 
 # SESSION BASED AUTHENTICATION VIEWS - LOGIN AND LOGOUT USER
 @api_view(["POST"])
-@csrf_exempt
 def login_view(request):
     # EXTRACT USERNAME AND PASSWORD FROM THE REQUEST
     username = request.data["username"]
@@ -54,7 +57,6 @@ def login_view(request):
 
 
 @api_view(["GET"])
-@csrf_exempt
 def logout_view(request):
     # IF UNAUTHENTICATED USERS REQUEST TO LOGOUT
     if not request.user.is_authenticated:
@@ -64,6 +66,19 @@ def logout_view(request):
 
     logout(request)
     return Response({"detail": "Successfully logged out."}, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+def get_user_view(request):
+    if not request.user.is_authenticated:
+        return Response(
+            {"detail": "Not authorized"}, status=status.HTTP_401_UNAUTHORIZED
+        )
+
+    user = get_object_or_404(UserProfile, id=request.user.id)
+    serialized_user = UserProfileSerializer(user)
+
+    return Response(serialized_user.data, status=status.HTTP_200_OK)
 
 
 # SESSION BASED AUTHENTICATION VIEWS - LOGIN AND LOGOUT

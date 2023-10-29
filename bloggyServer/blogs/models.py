@@ -34,3 +34,6 @@ class Comment(models.Model):
     blog = models.ForeignKey(Blog, on_delete=models.CASCADE)
     comment = models.TextField()
     date = models.DateTimeField(blank=True, default=now)
+
+    def __str__(self):
+        return f"For blog '{self.blog}' comment: '{self.comment}' "
