@@ -8,7 +8,7 @@ from django.utils.timezone import now
 class UserProfile(AbstractUser):
     bio = models.TextField(blank=True)
     location = models.CharField(max_length=255, blank=True)
-    avatar = models.ImageField(default="default.jpg", upload_to="profile_pics")
+    avatar = models.ImageField(default="default_avatar.jpg", upload_to="profile_pics")
 
 
 class Category(models.Model):
@@ -37,3 +37,14 @@ class Comment(models.Model):
 
     def __str__(self):
         return f"For blog '{self.blog}' comment: '{self.comment}' "
+
+
+class Visit(models.Model):
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    blog = models.ForeignKey(Blog, on_delete=models.CASCADE)
+    visit = models.DateTimeField(blank=True, default=now)
+
+
+class SavedBlog(models.Model):
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    blog = models.ForeignKey(Blog, on_delete=models.CASCADE)

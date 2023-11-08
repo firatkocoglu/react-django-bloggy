@@ -9,11 +9,15 @@ from .views import (
     CategoryViewSet,
     BlogViewSet,
     CommentViewSet,
+    VisitViewSet,
+    SavedBlogViewSet,
 )
 
 router = routers.DefaultRouter(trailing_slash=False)
 router.register(r"categories", CategoryViewSet, basename="category")
 router.register(r"blogs", BlogViewSet, basename="blog")
+router.register(r"visits", VisitViewSet, basename="visit")
+router.register(r"savedblogs", SavedBlogViewSet, basename="savedblog")
 
 blog_router = routers.NestedDefaultRouter(router, r"blogs", lookup="blog")
 blog_router.register(r"comments", CommentViewSet, basename="blog-comments")

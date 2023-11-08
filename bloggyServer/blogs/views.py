@@ -10,9 +10,10 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.pagination import PageNumberPagination
 
 # IMPORT MODELS
-from .models import Category, Blog, Comment, UserProfile
+from .models import Category, Blog, Comment, UserProfile, Visit, SavedBlog
 
 # IMPORT SERIALIZERS
 from .serializers import (
@@ -20,7 +21,16 @@ from .serializers import (
     BlogSerializer,
     CommentSerializer,
     UserProfileSerializer,
+    VisitSerializer,
+    SavedBlogSerializer,
 )
+
+# CREATE CUSTOM PAGINATION CLASS
+from rest_framework.pagination import PageNumberPagination
+
+
+# class DefaultPagination(PageNumberPagination):
+#     page_size = 6
 
 
 # SESSION BASED AUTHENTICATION VIEWS - LOGIN AND LOGOUT USER
@@ -85,15 +95,26 @@ def get_user_view(request):
 
 
 # CATEGORY OPERATIONS VIEWS
+class DefaultPagination(PageNumberPagination):
+    page_size = 4
+    page_query_param = "page"
 
 
 class CategoryViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
+    pagination_class = DefaultPagination
 
     def list(self, request):
         category_list = Category.objects.all()
-        serialized_list = CategorySerializer(category_list, many=True)
-        return Response(serialized_list.data, status=status.HTTP_200_OK)
+        page = self.paginate_queryset(category_list)
+
+        if self.request.query_params.get("no_page") == "1":
+            serialized_list = CategorySerializer(category_list, many=True)
+            return Response(serialized_list.data, status=status.HTTP_200_OK)
+
+        if page is not None:
+            serialized_list = CategorySerializer(page, many=True)
+            return self.get_paginated_response(serialized_list.data)
 
     def create(self, request):
         if request.user.is_staff:
@@ -141,19 +162,53 @@ class CategoryViewSet(ModelViewSet):
 # CATEGORY OPERATIONS VIEWS
 
 
+# VISIT OPERATIONS VIEWS
+class VisitViewSet(ModelViewSet):
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request):
+        queryset = Visit.objects.filter(user_id=request.user.id).order_by("-visit")[:5]
+        serialized_visit = VisitSerializer(queryset, many=True)
+        return Response(serialized_visit.data, status=status.HTTP_200_OK)
+
+    def create(self, request, pk):
+        queryset = Visit.objects.filter(user_id=request.user.id).order_by("-visit")[:5]
+        for blog in queryset:
+            if blog.blog_id == int(pk):
+                return
+
+        visit_data = {"user_id": request.user.id, "blog_id": pk}
+        serialized_data = VisitSerializer(data=visit_data)
+        serialized_data.is_valid(raise_exception=True)
+        serialized_data.save()
+        return Response(serialized_data.data, status=status.HTTP_201_CREATED)
+
+
+# VISIT OPERATIONS VIEWS
+
+
 # BLOG OPERATIONS VIEWS
 class BlogViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
+    pagination_class = DefaultPagination
 
     def retrieve(self, request, pk):
+        VisitViewSet.create(self, request, pk)
         blog = get_object_or_404(Blog, id=pk)
         serialized_blog = BlogSerializer(blog)
         return Response(serialized_blog.data, status=status.HTTP_200_OK)
 
     def list(self, request):
         blog_list = Blog.objects.all()
-        serialized_blogs = BlogSerializer(blog_list, many=True)
-        return Response(serialized_blogs.data, status=status.HTTP_200_OK)
+        page = self.paginate_queryset(blog_list)
+
+        if self.request.query_params.get("no_page") == "1":
+            serialized_blogs = BlogSerializer(blog_list, many=True)
+            return Response(serialized_blogs.data, status=status.HTTP_200_OK)
+
+        if page is not None:
+            serialized_blogs = BlogSerializer(page, many=True)
+            return self.get_paginated_response(serialized_blogs.data)
 
     def create(self, request):
         blog_data = {"user_id": request.user.id, **request.data.dict()}
@@ -190,6 +245,45 @@ class BlogViewSet(ModelViewSet):
 
 
 # BLOG OPERATIONS VIEWS
+
+
+# SAVED BLOG OPERATIONS VIEWS
+class SavedBlogViewSet(ModelViewSet):
+    def list(self, request):
+        savedblogs_list = SavedBlog.objects.filter(user_id=request.user.id)
+        serialized_list = SavedBlogSerializer(savedblogs_list, many=True)
+        return Response(serialized_list.data, status=status.HTTP_200_OK)
+
+    def create(self, request):
+        savedblogs_list = SavedBlog.objects.filter(user_id=request.user.id)
+        for blog in savedblogs_list:
+            if blog.blog_id == request.data["blog_id"]:
+                return Response(
+                    {"detail": "Blog already saved."}, status=status.HTTP_200_OK
+                )
+
+        data = {"user_id": request.user.id, **request.data}
+        serialized_data = SavedBlogSerializer(data=data)
+        serialized_data.is_valid(raise_exception=True)
+        serialized_data.save()
+        return Response(serialized_data.data, status=status.HTTP_201_CREATED)
+
+    def destroy(self, request, pk):
+        savedblog = get_object_or_404(SavedBlog, id=pk)
+        if request.user.id == savedblog.user.id:
+            self.perform_destroy(savedblog)
+            return Response(
+                {"detail": "Blog deleted from saved blogs list."},
+                status=status.HTTP_200_OK,
+            )
+        else:
+            return Response(
+                {"detail": "You do not have permissions to do this action"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+
+# SAVED BLOG OPERATIONS VIEWSx
 
 
 # COMMENT OPERATIONS VIEWS
@@ -232,9 +326,9 @@ class CommentViewSet(ModelViewSet):
         comment = get_object_or_404(Comment, id=pk)
         if comment.user.id == request.user.id:
             self.perform_destroy(comment)
-            return Response(
-                {"detail": "Comment successfully deleted."}, status=status.HTTP_200_OK
-            )
+            comments = Comment.objects.filter(blog_id=blog_pk)
+            serialized_comments = CommentSerializer(comments, many=True)
+            return Response(serialized_comments.data, status=status.HTTP_200_OK)
         else:
             return Response(
                 {"detail": "You do not have permissions to do this action"},

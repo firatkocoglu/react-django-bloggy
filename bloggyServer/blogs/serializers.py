@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import UserProfile, Category, Blog, Comment
+from .models import UserProfile, Category, Blog, Comment, Visit, SavedBlog
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -53,3 +53,25 @@ class BlogSerializer(serializers.ModelSerializer):
             "content",
             "date",
         ]
+
+
+class VisitSerializer(serializers.ModelSerializer):
+    user_id = serializers.IntegerField(write_only=True)
+
+    blog_id = serializers.IntegerField(write_only=True)
+    blog = BlogSerializer(read_only=True)
+
+    class Meta:
+        model = Visit
+        fields = ["id", "blog_id", "blog", "user_id", "visit"]
+
+
+class SavedBlogSerializer(serializers.ModelSerializer):
+    user_id = serializers.IntegerField(write_only=True)
+
+    blog_id = serializers.IntegerField(write_only=True)
+    blog = BlogSerializer(read_only=True)
+
+    class Meta:
+        model = SavedBlog
+        fields = ["id", "blog_id", "blog", "user_id"]
