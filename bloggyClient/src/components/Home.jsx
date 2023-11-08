@@ -1,32 +1,37 @@
-import { useEffect } from 'react';
-import { useContext } from 'react';
+import { useEffect, useContext } from 'react';
 import { GlobalContext } from '../context/Context';
-import axios from 'axios';
-
-const user_url = 'http://localhost:8000/api/getuser/';
+import { useNavigate } from 'react-router-dom';
+import Search from './Search';
+import Blogs from './Blogs';
+import Visits from './Visits';
+import SavedBlogs from './SavedBlogs';
 
 const Home = () => {
-  const { user, setUser, session } = useContext(GlobalContext);
+  const { session } = useContext(GlobalContext);
+
+  const navigation = useNavigate();
 
   useEffect(() => {
-    axios
-      .get(user_url, {
-        withCredentials: true,
-        headers: {
-          'X-CSRFToken': session,
-        },
-      })
-      .then((response) => {
-        setUser(response.data);
-      })
-      .catch((error) => console.log(error));
+    //IF THERE IS NO VALID TOKEN RETURN TO LANDING PAGE
+    if (!session) {
+      return navigation('/');
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <>
-      <div>{user.first_name + ' ' + user.last_name}</div>
-      <div>{user.bio}</div>
-      <div>{user.location}</div>
+      <Search />
+      <div className='home-main'>
+        <div className='home-left'>
+          <Blogs />{' '}
+        </div>
+        <div className='home-right'>
+          <Visits />
+          <SavedBlogs />
+        </div>
+      </div>
     </>
   );
 };

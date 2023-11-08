@@ -3,6 +3,12 @@ import {
   SET_CREDENTIALS_ERROR,
   EMPTY_CREDENTIALS_ERROR,
   SET_USER,
+  SET_CATEGORIES,
+  SET_BLOGS,
+  SET_LOADING,
+  SET_SAVED_BLOGS,
+  SET_HAS_MORE,
+  SET_NEXT_PAGE,
 } from './actions';
 
 export const GlobalReducer = (state, action) => {
@@ -52,6 +58,48 @@ export const GlobalReducer = (state, action) => {
     return {
       ...state,
       user: { ...action.payload.user },
+    };
+  }
+
+  if (action.type === SET_CATEGORIES) {
+    return {
+      ...state,
+      categories: [...action.payload],
+    };
+  }
+
+  if (action.type === SET_BLOGS) {
+    return {
+      ...state,
+      blogs: [...action.payload],
+    };
+  }
+
+  if (action.type === SET_LOADING) {
+    return {
+      ...state,
+      isLoading: action.payload.data,
+    };
+  }
+
+  if (action.type === SET_SAVED_BLOGS) {
+    return {
+      ...state,
+      savedBlogs: [...action.payload],
+    };
+  }
+
+  if (action.type === SET_HAS_MORE) {
+    return {
+      ...state,
+      hasMore: action.payload,
+    };
+  }
+
+  if (action.type === SET_NEXT_PAGE) {
+    return {
+      ...state,
+      nextPage: action.payload,
     };
   }
 };

@@ -8,6 +8,7 @@ import { RiLockPasswordFill } from 'react-icons/ri';
 
 const login_url = 'http://localhost:8000/api/login/';
 
+//LOGIN VIEW
 const Login = () => {
   const [credentials, setCredentials] = useState({
     username: '',
@@ -26,6 +27,7 @@ const Login = () => {
 
   useEffect(() => {
     emptyCredentialsError();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const navigation = useNavigate();
@@ -47,13 +49,22 @@ const Login = () => {
       )
       .then(function (response) {
         console.log(response);
+
+        //SET GLOBAL COOKIE STATE
         let csrf_cookie = new Cookie().get('csrftoken');
-        navigation('/home');
         setSession(csrf_cookie);
+
+        //CLEAR CREDENTIALS INPUT FIELDS AFTER SUCCESSFULL LOGIN
         setCredentials({ username: '', password: '' });
+
+        //RESET CREDENTIALS ERRORS IF THERE ARE ANY
         emptyCredentialsError();
+
+        //REDIRECT TO HOME
+        navigation('/home');
       })
       .catch(function (error) {
+        emptyCredentialsError();
         setCredentialsError(error.response.data.detail);
       });
   };

@@ -5,8 +5,9 @@ body {
 
 nav {
   display: flex;
-  border-bottom: 1px solid black;
+  border-bottom: 1px solid #ede9e9;
   align-items: center;
+  row-gap: 10px;
 }
 
 .nav-brand {
@@ -39,6 +40,20 @@ nav {
   text-decoration: underline;
 }
 
+.profile {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar {
+  border-radius: 50%;
+  width: 25px;
+  height: 25px;
+  border: 1px solid #ede9e9;
+  padding: 3px;
+}
 /* LANDING PAGE CSS  */
 
 .landing-section {
@@ -188,3 +203,272 @@ input:focus {
 }
 
 /* LOGIN - REGISTER PAGE CSS */
+
+/* HOME PAGE CSS */
+
+.home-main {
+  display: flex;
+  padding: 1% 20%;
+}
+
+.home-left {
+  width: 60%;
+}
+
+.home-right {
+  width: 40%;
+}
+
+/* CATEGORY SECTION */
+
+.search-categories {
+  display: flex;
+  border-bottom: 1px solid #ede9e9;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.categories {
+  display: flex;
+  min-width: 800px;
+  align-items: center;
+  justify-content: space-evenly;
+}
+
+.search input {
+  font: inherit;
+  font-size: 1.25rem;
+  border: none;
+  border-radius: 30px;
+  background-color: #f5f7f8;
+  padding: 0 20px;
+  min-height: 50px;
+  min-width: 400px;
+}
+
+.category-list {
+  display: flex;
+  gap: 10px;
+  justify-content: space-evenly;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  min-width: 800px;
+}
+
+.category-list li {
+  list-style-type: none;
+  width: 100%;
+  text-align: center;
+}
+
+.category-list button {
+  font: inherit;
+  font-size: 1.3rem;
+  border: none;
+  border-radius: 30px;
+  padding: 15px 20px;
+  background: none;
+  opacity: 1;
+  transition: opacity 0.2s ease-in;
+}
+
+.category-list button:hover {
+  color: darkgray;
+}
+
+.category-list button:hover {
+  cursor: pointer;
+}
+
+.category-arrow {
+  background: none;
+  border: none;
+}
+
+.category-arrow:hover {
+  color: darkgrey;
+}
+/* CATEGORY SECTION */
+
+/* BLOGS SECTION */
+/* .blog-section {
+  /* padding: 0 5%; */
+/* } */
+
+.blogs {
+  border-right: 1px solid #ede9e9;
+  padding: 3%;
+}
+
+.blog {
+  border-bottom: 1px solid #ede9e9;
+  padding: 2%;
+}
+
+.blog-title,
+.blog-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.author:hover,
+.title:hover,
+.blog-content:hover {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.author {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.blog-category {
+  background-color: #ede9e9;
+  text-align: center;
+  border-radius: 30px;
+  padding: 5px;
+}
+
+.blog-save button {
+  background: none;
+  border: none;
+  font-size: 20px;
+}
+
+.blog-save button:hover {
+  cursor: pointer;
+}
+
+/* BLOGS SECTION */
+
+/* RECENTLY VIEWED SECTION */
+.visits-section {
+  padding: 5%;
+  border-bottom: 1px solid #ede9e9;
+}
+
+.visits-title {
+  margin-left: 2.5rem;
+}
+
+.visits-section li {
+  list-style-type: none;
+  margin-bottom: 10px;
+}
+
+/* RECENTLY VIEWED SECTION */
+
+/* SAVED BLOGS SECTION  */
+.saved-blogs-section {
+  padding: 5%;
+  border-bottom: 1px solid #ede9e9;
+}
+
+.saved-blogs-title {
+  margin-left: 2.5rem;
+}
+
+.saved-blogs li {
+  list-style-type: none;
+  margin-bottom: 10px;
+}
+
+.all-saved-blogs {
+  text-align: center;
+  margin-top: 30px;
+}
+
+/* SAVED BLOGS SECTION  */
+
+/* BLOG DETAIL SECTION */
+.blog-detail-section {
+  padding: 1% 25%;
+}
+
+.blog-detail-header {
+  border-bottom: 1px solid #ede9e9;
+  margin-bottom: 50px;
+}
+
+.blog-detail-header h1 {
+  font-size: 40px;
+}
+
+.blog-detail-author {
+  display: flex;
+  align-items: center;
+  padding: 2%;
+}
+
+.info-author {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.author-image {
+  margin-right: 10px;
+}
+
+.info span {
+  color: darkgray;
+}
+
+/* BLOG DETAIL SECTION */
+
+/* COMMENTS SECTION */
+.comments-section {
+  padding: 1% 25%;
+}
+
+.comment {
+  background: #f2f0f0;
+  border: none;
+  border-radius: 10px;
+  padding: 3%;
+  margin-bottom: 10px;
+}
+
+.comment-info-container {
+  display: flex;
+  align-items: center;
+  border-bottom: 2px solid white;
+}
+
+.comment-detail {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.comment-date,
+.comment-author {
+  color: darkgray;
+}
+
+.delete-comment {
+  display: flex;
+  justify-content: end;
+}
+
+.delete-comment button {
+  background: none;
+  border: none;
+  text-decoration: underline;
+  font: inherit;
+}
+
+.delete-comment button:hover {
+  cursor: pointer;
+  color: #3d30a2;
+}
+
+/* COMMENTS SECTION */
+
+/* HOME PAGE CSS */

@@ -1,9 +1,19 @@
-// import { useContext } from 'react';
-import { Link } from 'react-router-dom';
-// import { GlobalContext } from '../context/Context';
+import { useContext, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { GlobalContext } from '../context/Context';
 
 const Landing = () => {
-  // const { session } = useContext(GlobalContext);
+  const { session } = useContext(GlobalContext);
+
+  const navigation = useNavigate();
+
+  useEffect(() => {
+    if (session) {
+      return navigation('/home');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <>
       <section className='landing-section'>

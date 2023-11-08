@@ -7,6 +7,7 @@ import Home from './Home';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 import { GlobalContextProvider } from '../context/Context';
+import BlogDetail from './BlogDetail';
 
 function App() {
   return (
@@ -15,10 +16,11 @@ function App() {
         <Navbar />
         <Routes>
           <Route path='/' element={<Landing />} />
+          <Route path='/home' element={<Home />} />
           <Route path='/sign-in' element={<Login />} />
           <Route path='/sign-out' element={<Landing />} />
-          <Route path='/home' element={<Home />} />
           <Route path='/register' element={<Register />} />
+          <Route path='/blogs/:blogID' element={<BlogDetail />} />
         </Routes>
       </GlobalContextProvider>
     </BrowserRouter>
