@@ -6,6 +6,7 @@ from .views import (
     login_view,
     logout_view,
     get_user_view,
+    update_user_view,
     CategoryViewSet,
     BlogViewSet,
     CommentViewSet,
@@ -13,7 +14,7 @@ from .views import (
     SavedBlogViewSet,
 )
 
-router = routers.DefaultRouter(trailing_slash=False)
+router = routers.DefaultRouter(trailing_slash=True)
 router.register(r"categories", CategoryViewSet, basename="category")
 router.register(r"blogs", BlogViewSet, basename="blog")
 router.register(r"visits", VisitViewSet, basename="visit")
@@ -26,6 +27,7 @@ urlpatterns = [
     path("login/", login_view, name="login-view"),
     path("logout/", logout_view, name="logout-view"),
     path("getuser/", get_user_view, name="get-user-view"),
+    path("updateuser/", update_user_view, name="update-user-view"),
     path("", include(router.urls)),
     path("", include(blog_router.urls)),
 ]

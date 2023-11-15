@@ -1,9 +1,5 @@
 from django.shortcuts import get_object_or_404
-from django.http import JsonResponse, response
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
-from django.middleware.csrf import get_token
-from django.middleware import csrf
 
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -11,6 +7,9 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
+from rest_framework import filters
+
+from django_filters.rest_framework import DjangoFilterBackend
 
 # IMPORT MODELS
 from .models import Category, Blog, Comment, UserProfile, Visit, SavedBlog
@@ -91,6 +90,22 @@ def get_user_view(request):
     return Response(serialized_user.data, status=status.HTTP_200_OK)
 
 
+@api_view(["PUT", "PATCH"])
+def update_user_view(request):
+    if not request.user.is_authenticated:
+        return Response(
+            {"detail": "Not authorized"}, status=status.HTTP_401_UNAUTHORIZED
+        )
+
+    user = get_object_or_404(UserProfile, id=request.user.id)
+
+    serialized_user = UserProfileSerializer(user, request.data, partial=True)
+    serialized_user.is_valid(raise_exception=True)
+    serialized_user.update(user, request.data)
+
+    return Response(serialized_user.data, status=status.HTTP_200_OK)
+
+
 # SESSION BASED AUTHENTICATION VIEWS - LOGIN AND LOGOUT
 
 
@@ -102,19 +117,11 @@ class DefaultPagination(PageNumberPagination):
 
 class CategoryViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
-    pagination_class = DefaultPagination
 
     def list(self, request):
         category_list = Category.objects.all()
-        page = self.paginate_queryset(category_list)
-
-        if self.request.query_params.get("no_page") == "1":
-            serialized_list = CategorySerializer(category_list, many=True)
-            return Response(serialized_list.data, status=status.HTTP_200_OK)
-
-        if page is not None:
-            serialized_list = CategorySerializer(page, many=True)
-            return self.get_paginated_response(serialized_list.data)
+        serialized_list = CategorySerializer(category_list, many=True)
+        return Response(serialized_list.data, status=status.HTTP_200_OK)
 
     def create(self, request):
         if request.user.is_staff:
@@ -189,8 +196,34 @@ class VisitViewSet(ModelViewSet):
 
 # BLOG OPERATIONS VIEWS
 class BlogViewSet(ModelViewSet):
+    queryset = Blog.objects.all()
+    serializer_class = BlogSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = DefaultPagination
+
+    filter_backends = (
+        DjangoFilterBackend,
+        filters.SearchFilter,
+    )
+
+    filterset_fields = ("category__id",)
+
+    search_fields = (
+        "category__id",
+        "user__username",
+        "user__first_name",
+        "user__last_name",
+        "content",
+        "title",
+    )
+
+    # def get_queryset(self):
+    #     queryset = self.queryset
+    #     if "category__id" in self.request.GET:
+    #         filter_query = self.request.GET["category__id"]
+    #         queryset = Blog.objects.filter(category__id=filter_query)
+
+    #     return queryset
 
     def retrieve(self, request, pk):
         VisitViewSet.create(self, request, pk)
@@ -198,12 +231,11 @@ class BlogViewSet(ModelViewSet):
         serialized_blog = BlogSerializer(blog)
         return Response(serialized_blog.data, status=status.HTTP_200_OK)
 
-    def list(self, request):
-        blog_list = Blog.objects.all()
-        page = self.paginate_queryset(blog_list)
+    def get(self, request):
+        page = self.paginate_queryset(self.queryset)
 
         if self.request.query_params.get("no_page") == "1":
-            serialized_blogs = BlogSerializer(blog_list, many=True)
+            serialized_blogs = BlogSerializer(self.queryset, many=True)
             return Response(serialized_blogs.data, status=status.HTTP_200_OK)
 
         if page is not None:
@@ -211,7 +243,7 @@ class BlogViewSet(ModelViewSet):
             return self.get_paginated_response(serialized_blogs.data)
 
     def create(self, request):
-        blog_data = {"user_id": request.user.id, **request.data.dict()}
+        blog_data = {"user_id": request.user.id, **request.data}
         serialized_blog = BlogSerializer(data=blog_data)
         serialized_blog.is_valid(raise_exception=True)
         serialized_blog.save()
