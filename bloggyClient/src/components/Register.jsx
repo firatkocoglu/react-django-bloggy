@@ -1,6 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
 import { GlobalContext } from '../context/Context';
 import { HiUser } from 'react-icons/hi2';
 import { RiLockPasswordFill } from 'react-icons/ri';
@@ -20,6 +19,7 @@ const Register = () => {
     credentials_error,
     setCredentialsError,
     emptyCredentialsError,
+    navigation,
   } = useContext(GlobalContext);
 
   const { email, username, password } = credentials;
@@ -28,8 +28,6 @@ const Register = () => {
     emptyCredentialsError();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const navigation = useNavigate();
 
   const inputHandler = (e) => {
     setCredentials({

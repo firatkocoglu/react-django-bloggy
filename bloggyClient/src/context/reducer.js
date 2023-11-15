@@ -5,10 +5,10 @@ import {
   SET_USER,
   SET_CATEGORIES,
   SET_BLOGS,
-  SET_LOADING,
   SET_SAVED_BLOGS,
   SET_HAS_MORE,
   SET_NEXT_PAGE,
+  SET_SEARCH_RESULTS,
 } from './actions';
 
 export const GlobalReducer = (state, action) => {
@@ -75,13 +75,6 @@ export const GlobalReducer = (state, action) => {
     };
   }
 
-  if (action.type === SET_LOADING) {
-    return {
-      ...state,
-      isLoading: action.payload.data,
-    };
-  }
-
   if (action.type === SET_SAVED_BLOGS) {
     return {
       ...state,
@@ -100,6 +93,13 @@ export const GlobalReducer = (state, action) => {
     return {
       ...state,
       nextPage: action.payload,
+    };
+  }
+
+  if (action.type === SET_SEARCH_RESULTS) {
+    return {
+      ...state,
+      searchResults: [...action.payload],
     };
   }
 };

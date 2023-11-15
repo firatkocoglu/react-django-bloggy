@@ -5,7 +5,7 @@ import { GlobalContext } from '../context/Context';
 import axios from 'axios';
 import default_avatar from '../assets/default_avatar.png';
 
-const Comments = ({ blog_id }) => {
+const Comments = ({ blog_id, navigationID }) => {
   const [comments, setComments] = useState([]);
 
   const { session, user } = useContext(GlobalContext);
@@ -44,7 +44,7 @@ const Comments = ({ blog_id }) => {
   useEffect(() => {
     fetchComments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setComments]);
+  }, [setComments, navigationID]);
 
   if (comments.length === 0)
     return (

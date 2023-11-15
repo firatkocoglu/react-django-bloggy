@@ -1,7 +1,8 @@
 import { useState, useContext, useEffect } from 'react';
-import axios from 'axios';
 import { GlobalContext } from '../context/Context';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
+import Loading from './Loading';
 
 const Visits = () => {
   const visits_url = 'http://localhost:8000/api/visits';
@@ -9,24 +10,27 @@ const Visits = () => {
   const { session } = useContext(GlobalContext);
 
   const [visits, setVisits] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (session) fetchVisits();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const fetchVisits = () => {
-    axios
-      .get(visits_url, {
+  const fetchVisits = async () => {
+    setIsLoading(true);
+    try {
+      const response = await axios.get(visits_url, {
         withCredentials: true,
         headers: {
           'X-CSRFToken': session,
         },
-      })
-      .then((response) => {
-        setVisits(response.data);
-      })
-      .catch((error) => console.log(error));
+      });
+      setVisits(response.data);
+      setIsLoading(false);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -35,6 +39,7 @@ const Visits = () => {
         <h1 className='visits-title'>Recently Visited</h1>
       </div>
       <div className='visits'>
+        {isLoading && <Loading />}
         <ul className='visits-list'>
           {' '}
           {visits.map((visit) => {

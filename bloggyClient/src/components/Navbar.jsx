@@ -6,14 +6,12 @@ import { Link } from 'react-router-dom';
 import { GlobalContext } from '../context/Context';
 import axios from 'axios';
 import Cookies from 'universal-cookie';
-import { useNavigate } from 'react-router-dom';
 
 const logout_url = 'http://localhost:8000/api/logout/';
 
 const Navbar = () => {
-  const { session, setSession, user, setUser } = useContext(GlobalContext);
-
-  const navigation = useNavigate();
+  const { session, setSession, user, setUser, setFilteredBlogs, navigation } =
+    useContext(GlobalContext);
 
   const brand_navigation = session ? '/home' : '/';
 
@@ -57,6 +55,9 @@ const Navbar = () => {
             color: 'black',
           }}
           to={brand_navigation}
+          onClick={() => {
+            setFilteredBlogs([]);
+          }}
         >
           <img src={logo} alt='web-talks-logo' className='logo' />
           <h3 className='nav-brand-header'>Web Talks</h3>
@@ -80,7 +81,9 @@ const Navbar = () => {
                 alt='web-talk-avatar'
                 className='avatar'
               />
-              <a href=''>{user.first_name ? user.first_name : user.username}</a>
+              <Link to='/profile'>
+                {user.first_name ? user.first_name : user.username}
+              </Link>
             </p>
             <li>
               <Link to='/sign-out' onClick={logout}>

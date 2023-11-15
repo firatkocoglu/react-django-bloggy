@@ -9,13 +9,14 @@ import {
   SET_USER,
   SET_CATEGORIES,
   SET_BLOGS,
-  SET_LOADING,
   SET_SAVED_BLOGS,
   SET_HAS_MORE,
   SET_NEXT_PAGE,
+  SET_SEARCH_RESULTS,
 } from './actions';
 import Cookie from 'universal-cookie';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 let csrf_cookie = new Cookie().get('csrftoken'); //ADDING COOKIE TO GLOBAL CONTEXT TO PERSIST CSRF TOKEN DATA
 
@@ -34,10 +35,10 @@ const defaultState = {
   },
   categories: [],
   blogs: [],
-  isLoading: false,
   savedBlogs: [],
   hasMore: true,
-  nextPage: 'http://localhost:8000/api/blogs?page=1',
+  nextPage: `http://localhost:8000/api/blogs?page=1`,
+  searchResults: [],
 };
 
 export const GlobalContext = createContext(defaultState);
@@ -45,19 +46,13 @@ export const GlobalContext = createContext(defaultState);
 export const GlobalContextProvider = ({ children }) => {
   const [state, dispatch] = useReducer(GlobalReducer, defaultState);
 
+  const navigation = useNavigate();
+
   useEffect(() => {
     //SET USER GLOBALLY (ONLY IF A SESSION INITIALIZED)
     if (state.session) fetchUser();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.session]); //FETCH NEW USER STATE IF SESSION CHANGES
-
-  const setSession = (session) => {
-    dispatch({
-      type: SET_SESSION,
-      payload: { session },
-    });
-    console.log('Session set.');
-  };
 
   const fetchUser = () => {
     axios
@@ -73,6 +68,94 @@ export const GlobalContextProvider = ({ children }) => {
       .catch((error) => console.log(error));
   };
 
+  const fetchBlogs = async (url) => {
+    //BEFORE FETCHING BLOGS RESET NEXT PAGE
+    //THIS MIGHT BE NECESSARY IN ORDER TO FETCH DIFFERENT TYPE OF REQUESTS
+    //(DIFFERENT TYPE OF REQUESTS COULD BE ALL THE BLOGS OR ONLY FILTERED BLOGS)
+    setNextPage('');
+    axios
+      .get(url, {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': state.session,
+        },
+      })
+      .then((response) => {
+        if (url.includes('search')) {
+          setSearchResults([...state.searchResults, ...response.data.results]);
+        } else {
+          setBlogs([...state.blogs, ...response.data.results]);
+        }
+        setNextPage(response.data.next);
+
+        if (!response.data.next) {
+          setHasMore(false);
+        }
+
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  const fetchSavedBlogs = async (setLoading) => {
+    setLoading(true);
+    try {
+      const response = await axios.get('http://localhost:8000/api/savedblogs', {
+        withCredentials: true,
+        headers: {
+          'X-CSRFToken': state.session,
+        },
+      });
+      setSavedBlogs(response.data);
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const saveBlog = (id) => {
+    axios
+      .post(
+        'http://localhost:8000/api/savedblogs/',
+        {
+          blog_id: id,
+        },
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': state.session,
+          },
+        }
+      )
+      .then((response) => {
+        fetchSavedBlogs();
+        console.log(response);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  const deleteBlog = (id) => {
+    axios
+      .delete(`http://localhost:8000/api/savedblogs/${id}`, {
+        withCredentials: true,
+        headers: {
+          'X-CSRFToken': state.session,
+        },
+      })
+      .then((response) => {
+        fetchSavedBlogs();
+        console.log(response);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
   //CHANGE INPUT STYLE WHEN CREDENTIALS ARE NOT PROVIDED
   const changeInput = (event, inputIndexArray) => {
     inputIndexArray.forEach((index) => {
@@ -85,6 +168,14 @@ export const GlobalContextProvider = ({ children }) => {
         index
       ].placeholder = `Provide your ${event.target[index].name}`;
     });
+  };
+
+  const setSession = (session) => {
+    dispatch({
+      type: SET_SESSION,
+      payload: { session },
+    });
+    console.log('Session set.');
   };
 
   //RETURN USER CREDENTIAL ERRORS
@@ -110,7 +201,6 @@ export const GlobalContextProvider = ({ children }) => {
     });
   };
 
-  //SET CATEGORIES
   const setCategories = (categories) => {
     dispatch({
       type: SET_CATEGORIES,
@@ -122,13 +212,6 @@ export const GlobalContextProvider = ({ children }) => {
     dispatch({
       type: SET_BLOGS,
       payload: blogs,
-    });
-  };
-
-  const setLoading = (data) => {
-    dispatch({
-      type: SET_LOADING,
-      payload: data,
     });
   };
 
@@ -153,16 +236,11 @@ export const GlobalContextProvider = ({ children }) => {
     });
   };
 
-  const fetchSavedBlogs = () => {
-    axios
-      .get('http://localhost:8000/api/savedblogs', {
-        withCredentials: true,
-        headers: {
-          'X-CSRFToken': state.session,
-        },
-      })
-      .then((response) => setSavedBlogs(response.data))
-      .catch((error) => console.log(error));
+  const setSearchResults = (results) => {
+    dispatch({
+      type: SET_SEARCH_RESULTS,
+      payload: results,
+    });
   };
 
   return (
@@ -170,6 +248,7 @@ export const GlobalContextProvider = ({ children }) => {
       value={{
         session: state.session,
         setSession,
+        navigation,
         changeInput,
         credentials_error: state.credentials_error,
         setCredentialsError,
@@ -177,19 +256,22 @@ export const GlobalContextProvider = ({ children }) => {
         user: state.user,
         setUser,
         fetchUser,
+        fetchBlogs,
         categories: state.categories,
         setCategories,
         blogs: state.blogs,
         setBlogs,
-        isLoading: state.isLoading,
-        setLoading,
         savedBlogs: state.savedBlogs,
         setSavedBlogs,
         fetchSavedBlogs,
+        saveBlog,
+        deleteBlog,
         hasMore: state.hasMore,
         setHasMore,
         nextPage: state.nextPage,
         setNextPage,
+        searchResults: state.searchResults,
+        setSearchResults,
       }}
     >
       {children}

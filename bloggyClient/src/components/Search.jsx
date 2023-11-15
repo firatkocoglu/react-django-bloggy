@@ -1,56 +1,31 @@
 /* eslint react/prop-types: 0 */
 
-import { useContext, useState, useEffect } from 'react';
-import { ImArrowLeft2, ImArrowRight2 } from 'react-icons/im';
+import { useState, useContext } from 'react';
 import { GlobalContext } from '../context/Context';
-import Category from './Category';
-import axios from 'axios';
+import { TfiWrite } from 'react-icons/tfi';
 
 export default function Search() {
-  const { session, categories, setCategories } = useContext(GlobalContext);
+  const [searchText, setSearchText] = useState('');
 
-  const [categoryPage, setCategoryPage] = useState(1);
-  const [isFinalCategoryPage, setIsFinalCategoryPage] = useState(false);
+  const { fetchBlogs, navigation } = useContext(GlobalContext);
 
-  const fetchCategories = (page) => {
-    const categories_url = `http://localhost:8000/api/categories?page=${page}`;
-
-    axios
-      .get(categories_url, {
-        withCredentials: true,
-        headers: {
-          'X-CSRFToken': session,
-        },
-      })
-      .then((response) => {
-        setCategories(response.data.results);
-        if (!response.data.next) {
-          setIsFinalCategoryPage(true);
-        } else {
-          setIsFinalCategoryPage(false);
-        }
-      })
-      .catch((error) => console.log(error));
+  const changeSearchText = (e) => {
+    setSearchText(e.target.value);
   };
 
-  useEffect(() => {
-    fetchCategories(categoryPage);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [categoryPage]);
-
-  const handleCategoryPage = (e) => {
-    if (e.currentTarget.name === 'increase') {
-      setCategoryPage((curr) => curr + 1);
-    }
-
-    if (e.currentTarget.name === 'decrease') {
-      setCategoryPage((curr) => curr - 1);
+  const submitSearchHandler = async (e) => {
+    e.preventDefault();
+    setSearchText('');
+    try {
+      fetchBlogs(`http://localhost:8000/api/blogs/?search=${searchText}`);
+      navigation('/results');
+    } catch (error) {
+      console.log(error);
     }
   };
 
   return (
-    <>
+    <form onSubmit={submitSearchHandler}>
       <div className='search-categories'>
         <div className='search'>
           <input
@@ -58,38 +33,17 @@ export default function Search() {
             name='search'
             id='search'
             placeholder='Search &#128270;'
+            value={searchText}
+            onChange={changeSearchText}
           />
         </div>
-        <div className='categories'>
-          <ul className='category-list'>
-            <button
-              type='button'
-              name='decrease'
-              className='category-arrow'
-              disabled={categoryPage === 1}
-              onClick={handleCategoryPage}
-            >
-              <ImArrowLeft2 />
-            </button>
-            {categories.map((category) => {
-              return (
-                <li key={category.id}>
-                  <Category category={category.category} />
-                </li>
-              );
-            })}
-            <button
-              type='button'
-              name='increase'
-              className='category-arrow'
-              onClick={handleCategoryPage}
-              disabled={isFinalCategoryPage}
-            >
-              <ImArrowRight2 />
-            </button>
-          </ul>
+        <div className='search-bar-buttons'>
+          <button type='button' onClick={() => navigation('/writeIn')}>
+            <TfiWrite />
+            <span>Write a blog</span>
+          </button>
         </div>
       </div>
-    </>
+    </form>
   );
 }

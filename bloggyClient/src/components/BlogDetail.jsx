@@ -4,10 +4,13 @@ import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import Loading from './Loading.jsx';
 import Comments from './Comments.jsx';
+import RelatedBlog from './RelatedBlog.jsx';
 import default_avatar from '../assets/default_avatar.png';
 
 const BlogDetail = () => {
-  const { session, isLoading, setLoading } = useContext(GlobalContext);
+  const { session } = useContext(GlobalContext);
+
+  const [isLoading, setIsLoading] = useState(true);
 
   const [blog, setBlog] = useState({
     id: '',
@@ -18,37 +21,63 @@ const BlogDetail = () => {
       last_name: '',
     },
     category: {
+      id: '',
       category: '',
     },
     date: '',
   });
 
+  const [relatedBlogs, setRelatedBlogs] = useState([]);
+
+  const [navigationID, setNavigationID] = useState('');
+
   const { blogID } = useParams();
 
   const blog_url = `http://localhost:8000/api/blogs/${blogID}`;
 
-  useEffect(() => {
-    setLoading(true);
-    retrieveBlog();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const { title, content, user, category, date } = blog;
 
-  const retrieveBlog = () => {
-    axios
-      .get(blog_url, {
+  useEffect(() => {
+    retrieveBlog();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navigationID]);
+
+  useEffect(() => {
+    fetchRelatedBlogs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [category]);
+
+  const retrieveBlog = async () => {
+    try {
+      const response = await axios.get(blog_url, {
         withCredentials: true,
         headers: {
           'X-CSRFToken': session,
         },
+      });
+      setBlog(response.data);
+      setIsLoading(false);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const fetchRelatedBlogs = () => {
+    axios
+      .get(`http://localhost:8000/api/blogs?category__id=${category.id}`, {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': session,
+        },
       })
       .then((response) => {
-        setBlog(response.data);
+        console.log(response);
+        setRelatedBlogs([...response.data.results]);
       })
-      .catch((error) => error);
-
-    setLoading(false);
+      .catch((error) => {
+        console.log(error);
+      });
   };
 
   return (
@@ -93,7 +122,21 @@ const BlogDetail = () => {
         </div>
       </section>
       <section className='comments-section'>
-        <Comments blog_id={blogID} />
+        {isLoading && <Loading />}
+        <Comments blog_id={blogID} navigationID={navigationID} />
+      </section>
+      <section className='related-blogs-section'>
+        <h1>You might also be interested in</h1>
+        {isLoading && <Loading />}
+        {relatedBlogs.map((blog) => {
+          return (
+            <RelatedBlog
+              blog={blog}
+              key={blog.id}
+              setNavigationID={setNavigationID}
+            />
+          );
+        })}
       </section>
     </>
   );

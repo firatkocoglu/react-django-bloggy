@@ -1,11 +1,14 @@
-import { BlogCard } from './BlogCard';
+/* eslint react/prop-types: 0 */
+
 import { useContext, useEffect } from 'react';
-import { GlobalContext } from '../context/Context';
+import { BlogCard } from './BlogCard';
 import Loading from './Loading';
+import { GlobalContext } from '../context/Context';
 import InfiniteScroll from 'react-infinite-scroll-component';
 
-const Blogs = () => {
-  const { blogs, hasMore, nextPage, fetchBlogs } = useContext(GlobalContext);
+const Results = () => {
+  const { searchResults, fetchBlogs, hasMore, nextPage } =
+    useContext(GlobalContext);
 
   useEffect(() => {
     //FETCH BLOGS ONLY IF THERE ARE FOLLOWING PAGES
@@ -14,14 +17,17 @@ const Blogs = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  console.log(searchResults);
+
   return (
-    <section className='blog-section'>
-      <div className='blogs'>
+    <section className='results-section'>
+      <div className='results-header'>
+        <h1>Search Results</h1>
+      </div>
+      <div className='results'>
         <InfiniteScroll
-          dataLength={blogs.length}
-          next={() => {
-            fetchBlogs(nextPage);
-          }}
+          dataLength={searchResults.length}
+          next={() => fetchBlogs(nextPage)}
           hasMore={hasMore}
           loader={<Loading />}
           endMessage={
@@ -31,21 +37,21 @@ const Blogs = () => {
                 fontSize: '1.1rem',
               }}
             >
-              You&apos;ve seen all the blogs.
+              You&apos;ve seen all the results.
             </p>
           }
         >
-          {blogs.map((blog) => {
-            const { id, user, category, title, content, date } = blog;
+          {searchResults.map((result) => {
+            const { id, user, category, title, content, date } = result;
             return (
               <BlogCard
                 key={id}
                 id={id}
                 title={title}
                 content={content}
-                date={date}
                 user={user}
                 category={category}
+                date={date}
               />
             );
           })}
@@ -55,4 +61,4 @@ const Blogs = () => {
   );
 };
 
-export default Blogs;
+export default Results;

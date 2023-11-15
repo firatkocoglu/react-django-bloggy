@@ -1,6 +1,7 @@
+/* eslint react/prop-types: 0 */
+
 import { useState, useContext, useEffect } from 'react';
 import { GlobalContext } from '../context/Context';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Cookie from 'universal-cookie';
 import { HiUser } from 'react-icons/hi2';
@@ -21,6 +22,7 @@ const Login = () => {
     credentials_error,
     setCredentialsError,
     emptyCredentialsError,
+    navigation,
   } = useContext(GlobalContext);
 
   const { username, password } = credentials;
@@ -29,8 +31,6 @@ const Login = () => {
     emptyCredentialsError();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const navigation = useNavigate();
 
   const sendCredentials = async () => {
     await axios
@@ -54,7 +54,7 @@ const Login = () => {
         let csrf_cookie = new Cookie().get('csrftoken');
         setSession(csrf_cookie);
 
-        //CLEAR CREDENTIALS INPUT FIELDS AFTER SUCCESSFULL LOGIN
+        //CLEAR CREDENTIALS INPUT FIELDS AFTER SUCCESSFUL LOGIN
         setCredentials({ username: '', password: '' });
 
         //RESET CREDENTIALS ERRORS IF THERE ARE ANY

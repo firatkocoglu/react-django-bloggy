@@ -1,65 +1,19 @@
 /* eslint react/prop-types: 0 */
 
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { BsBookmarkPlus, BsFillBookmarkDashFill } from 'react-icons/bs';
 import default_avatar from '../assets/default_avatar.png';
 import { useContext } from 'react';
 import { GlobalContext } from '../context/Context';
 
 export function BlogCard({ id, title, content, user, category, date }) {
-  const saveBlog_url = 'http://localhost:8000/api/savedblogs';
-
-  const navigation = useNavigate();
-
-  const { session, fetchSavedBlogs, savedBlogs } = useContext(GlobalContext);
+  const { saveBlog, deleteBlog, savedBlogs, navigation } =
+    useContext(GlobalContext);
 
   const blogClickHandler = (id) => {
     navigation(`/blogs/${id}`);
   };
 
   const isBlogSaved = savedBlogs.filter((blog) => blog.blog.id === id);
-
-  const saveBlog = () => {
-    axios
-      .post(
-        saveBlog_url,
-        {
-          blog_id: id,
-        },
-        {
-          withCredentials: true,
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': session,
-          },
-        }
-      )
-      .then((response) => {
-        fetchSavedBlogs();
-        console.log(response);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
-
-  const deleteBlog = (id) => {
-    axios
-      .delete(`http://localhost:8000/api/savedblogs/${id}`, {
-        withCredentials: true,
-        headers: {
-          'X-CSRFToken': session,
-        },
-      })
-      .then((response) => {
-        fetchSavedBlogs();
-        console.log(response);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
 
   return (
     <article key={id} className='blog'>
@@ -104,7 +58,7 @@ export function BlogCard({ id, title, content, user, category, date }) {
               <BsFillBookmarkDashFill />
             </button>
           ) : (
-            <button onClick={saveBlog}>
+            <button onClick={() => saveBlog(id)}>
               <BsBookmarkPlus />
             </button>
           )}

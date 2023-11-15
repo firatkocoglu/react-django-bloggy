@@ -1,12 +1,15 @@
-import { useContext, useEffect } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { GlobalContext } from '../context/Context';
 import { Link } from 'react-router-dom';
+import Loading from './Loading';
 
 const SavedBlogs = () => {
   const { savedBlogs, fetchSavedBlogs } = useContext(GlobalContext);
 
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
-    fetchSavedBlogs();
+    fetchSavedBlogs(setIsLoading);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -16,6 +19,7 @@ const SavedBlogs = () => {
         <h1 className='saved-blogs-title'>Saved Blogs</h1>
       </div>
       <div className='saved-blogs'>
+        {isLoading && <Loading />}
         <ul className='saved-blogs-list'>
           {savedBlogs.map((blog) => {
             return (
