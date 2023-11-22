@@ -12,6 +12,7 @@ from .views import (
     CommentViewSet,
     VisitViewSet,
     SavedBlogViewSet,
+    DraftViewSet,
 )
 
 router = routers.DefaultRouter(trailing_slash=True)
@@ -19,6 +20,7 @@ router.register(r"categories", CategoryViewSet, basename="category")
 router.register(r"blogs", BlogViewSet, basename="blog")
 router.register(r"visits", VisitViewSet, basename="visit")
 router.register(r"savedblogs", SavedBlogViewSet, basename="savedblog")
+router.register(r"drafts", DraftViewSet, basename="draft")
 
 blog_router = routers.NestedDefaultRouter(router, r"blogs", lookup="blog")
 blog_router.register(r"comments", CommentViewSet, basename="blog-comments")

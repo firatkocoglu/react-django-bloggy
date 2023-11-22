@@ -12,7 +12,7 @@ from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 
 # IMPORT MODELS
-from .models import Category, Blog, Comment, UserProfile, Visit, SavedBlog
+from .models import Category, Blog, Comment, UserProfile, Visit, SavedBlog, Draft
 
 # IMPORT SERIALIZERS
 from .serializers import (
@@ -22,6 +22,7 @@ from .serializers import (
     UserProfileSerializer,
     VisitSerializer,
     SavedBlogSerializer,
+    DraftSerializer,
 )
 
 # CREATE CUSTOM PAGINATION CLASS
@@ -217,13 +218,18 @@ class BlogViewSet(ModelViewSet):
         "title",
     )
 
-    # def get_queryset(self):
-    #     queryset = self.queryset
-    #     if "category__id" in self.request.GET:
-    #         filter_query = self.request.GET["category__id"]
-    #         queryset = Blog.objects.filter(category__id=filter_query)
+    def get_queryset(self):
+        if "by_user" in self.request.query_params:
+            queryset = Blog.objects.filter(user__id=self.request.user.id)
+            return queryset
 
-    #     return queryset
+        return super().get_queryset()
+
+    def paginate_queryset(self, queryset):
+        if "no_page" in self.request.query_params:
+            return None
+
+        return super().paginate_queryset(queryset)
 
     def retrieve(self, request, pk):
         VisitViewSet.create(self, request, pk)
@@ -231,16 +237,14 @@ class BlogViewSet(ModelViewSet):
         serialized_blog = BlogSerializer(blog)
         return Response(serialized_blog.data, status=status.HTTP_200_OK)
 
-    def get(self, request):
-        page = self.paginate_queryset(self.queryset)
+    # def list(self, request):
+    #     print(request)
+    #     serialized_blogs = BlogSerializer(self.queryset, many=True)
+    #     return Response(serialized_blogs.data, status=status.HTTP_200_OK)
 
-        if self.request.query_params.get("no_page") == "1":
-            serialized_blogs = BlogSerializer(self.queryset, many=True)
-            return Response(serialized_blogs.data, status=status.HTTP_200_OK)
-
-        if page is not None:
-            serialized_blogs = BlogSerializer(page, many=True)
-            return self.get_paginated_response(serialized_blogs.data)
+    #     # # if page is not None:
+    #     # serialized_blogs = BlogSerializer(self.queryset, many=True)
+    #     # return self.get_paginated_response(serialized_blogs.data)
 
     def create(self, request):
         blog_data = {"user_id": request.user.id, **request.data}
@@ -281,6 +285,8 @@ class BlogViewSet(ModelViewSet):
 
 # SAVED BLOG OPERATIONS VIEWS
 class SavedBlogViewSet(ModelViewSet):
+    permission_classes = [IsAuthenticated]
+
     def list(self, request):
         savedblogs_list = SavedBlog.objects.filter(user_id=request.user.id)
         serialized_list = SavedBlogSerializer(savedblogs_list, many=True)
@@ -320,6 +326,8 @@ class SavedBlogViewSet(ModelViewSet):
 
 # COMMENT OPERATIONS VIEWS
 class CommentViewSet(ModelViewSet):
+    permission_classes = [IsAuthenticated]
+
     def retrieve(self, request, blog_pk, pk):
         comment = get_object_or_404(Comment, id=pk)
         serialized_comment = CommentSerializer(comment)
@@ -334,7 +342,7 @@ class CommentViewSet(ModelViewSet):
         comment_data = {
             "user_id": request.user.id,
             "blog_id": blog_pk,
-            **request.data.dict(),
+            **request.data,
         }
         serialized_comment = CommentSerializer(data=comment_data)
         serialized_comment.is_valid(raise_exception=True)
@@ -369,3 +377,49 @@ class CommentViewSet(ModelViewSet):
 
 
 # COMMENT OPERATIONS VIEWS
+
+
+# DRAFT OPERATIONS VIEWS
+class DraftViewSet(ModelViewSet):
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request):
+        draft_list = Draft.objects.filter(user_id=request.user.id)
+        serialized_drafts = DraftSerializer(draft_list, many=True)
+        return Response(serialized_drafts.data, status=status.HTTP_200_OK)
+
+    def create(self, request):
+        draft_data = {"user_id": request.user.id, **request.data}
+        serialized_data = DraftSerializer(data=draft_data)
+        serialized_data.is_valid(raise_exception=True)
+        serialized_data.save()
+        return Response(serialized_data.data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, pk):
+        draft = get_object_or_404(Draft, id=pk)
+        if draft.user.id == request.user.id:
+            serialized_draft = DraftSerializer(draft, request.data, partial=True)
+            serialized_draft.is_valid(raise_exception=True)
+            self.perform_update(serialized_draft)
+            return Response(serialized_draft.data, status=status.HTTP_200_OK)
+        else:
+            return Response(
+                {"detail": "You do not have permission to do this action"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+    def destroy(self, request, pk):
+        draft = get_object_or_404(Draft, id=pk)
+        if draft.user.id == request.user.id:
+            self.perform_destroy(draft)
+            drafts = Draft.objects.filter(user_id=request.user.id)
+            serialized_drafts = DraftSerializer(drafts, many=True)
+            return Response(serialized_drafts.data, status=status.HTTP_200_OK)
+        else:
+            return Response(
+                {"detail": "You do not have permissions to do this action"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+
+# DRAFT OPERATIONS VIEWS

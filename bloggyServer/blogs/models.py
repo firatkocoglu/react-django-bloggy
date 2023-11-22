@@ -48,3 +48,15 @@ class Visit(models.Model):
 class SavedBlog(models.Model):
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     blog = models.ForeignKey(Blog, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.blog
+
+
+class Draft(models.Model):
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    category = models.ForeignKey(
+        Category, blank=True, null=True, on_delete=models.PROTECT
+    )
+    title = models.CharField(max_length=255)
+    content = models.TextField(blank=True)
