@@ -13,6 +13,8 @@ import {
   SET_HAS_MORE,
   SET_NEXT_PAGE,
   SET_SEARCH_RESULTS,
+  SET_DRAFTS,
+  SET_PUBLISHED,
 } from './actions';
 import Cookie from 'universal-cookie';
 import axios from 'axios';
@@ -39,6 +41,8 @@ const defaultState = {
   hasMore: true,
   nextPage: `http://localhost:8000/api/blogs?page=1`,
   searchResults: [],
+  drafts: [],
+  published: [],
 };
 
 export const GlobalContext = createContext(defaultState);
@@ -54,18 +58,18 @@ export const GlobalContextProvider = ({ children }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.session]); //FETCH NEW USER STATE IF SESSION CHANGES
 
-  const fetchUser = () => {
-    axios
-      .get('http://localhost:8000/api/getuser/', {
+  const fetchUser = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/getuser/', {
         withCredentials: true,
         headers: {
           'X-CSRFToken': state.session,
         },
-      })
-      .then((response) => {
-        setUser(response.data);
-      })
-      .catch((error) => console.log(error));
+      });
+      setUser(response.data);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const fetchBlogs = async (url) => {
@@ -92,32 +96,32 @@ export const GlobalContextProvider = ({ children }) => {
         if (!response.data.next) {
           setHasMore(false);
         }
-
       })
       .catch((error) => {
         console.log(error);
       });
   };
 
-  const fetchSavedBlogs = async (setLoading) => {
-    setLoading(true);
+  const fetchSavedBlogs = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/savedblogs', {
-        withCredentials: true,
-        headers: {
-          'X-CSRFToken': state.session,
-        },
-      });
+      const response = await axios.get(
+        'http://localhost:8000/api/savedblogs/',
+        {
+          withCredentials: true,
+          headers: {
+            'X-CSRFToken': state.session,
+          },
+        }
+      );
       setSavedBlogs(response.data);
-      setLoading(false);
     } catch (error) {
       console.log(error);
     }
   };
 
-  const saveBlog = (id) => {
-    axios
-      .post(
+  const saveBlog = async (id) => {
+    try {
+      const response = await axios.post(
         'http://localhost:8000/api/savedblogs/',
         {
           blog_id: id,
@@ -129,31 +133,30 @@ export const GlobalContextProvider = ({ children }) => {
             'X-CSRFToken': state.session,
           },
         }
-      )
-      .then((response) => {
-        fetchSavedBlogs();
-        console.log(response);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+      );
+      console.log(response);
+      fetchSavedBlogs();
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  const deleteBlog = (id) => {
-    axios
-      .delete(`http://localhost:8000/api/savedblogs/${id}`, {
-        withCredentials: true,
-        headers: {
-          'X-CSRFToken': state.session,
-        },
-      })
-      .then((response) => {
-        fetchSavedBlogs();
-        console.log(response);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+  const deleteBlog = async (id) => {
+    try {
+      const response = await axios.delete(
+        `http://localhost:8000/api/savedblogs/${id}/`,
+        {
+          withCredentials: true,
+          headers: {
+            'X-CSRFToken': state.session,
+          },
+        }
+      );
+      console.log(response);
+      fetchSavedBlogs();
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   //CHANGE INPUT STYLE WHEN CREDENTIALS ARE NOT PROVIDED
@@ -236,10 +239,24 @@ export const GlobalContextProvider = ({ children }) => {
     });
   };
 
+  const setDrafts = (drafts) => {
+    dispatch({
+      type: SET_DRAFTS,
+      payload: drafts,
+    });
+  };
+
   const setSearchResults = (results) => {
     dispatch({
       type: SET_SEARCH_RESULTS,
       payload: results,
+    });
+  };
+
+  const setPublished = (published) => {
+    dispatch({
+      type: SET_PUBLISHED,
+      payload: published,
     });
   };
 
@@ -272,6 +289,10 @@ export const GlobalContextProvider = ({ children }) => {
         setNextPage,
         searchResults: state.searchResults,
         setSearchResults,
+        drafts: state.drafts,
+        published: state.published,
+        setDrafts,
+        setPublished,
       }}
     >
       {children}

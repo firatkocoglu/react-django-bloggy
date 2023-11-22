@@ -9,6 +9,8 @@ import {
   SET_HAS_MORE,
   SET_NEXT_PAGE,
   SET_SEARCH_RESULTS,
+  SET_DRAFTS,
+  SET_PUBLISHED,
 } from './actions';
 
 export const GlobalReducer = (state, action) => {
@@ -100,6 +102,20 @@ export const GlobalReducer = (state, action) => {
     return {
       ...state,
       searchResults: [...action.payload],
+    };
+  }
+
+  if (action.type === SET_DRAFTS) {
+    return {
+      ...state,
+      drafts: [...action.payload],
+    };
+  }
+
+  if (action.type === SET_PUBLISHED) {
+    return {
+      ...state,
+      published: [...action.payload],
     };
   }
 };

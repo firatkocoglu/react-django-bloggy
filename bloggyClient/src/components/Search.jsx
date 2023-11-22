@@ -2,23 +2,34 @@
 
 import { useState, useContext } from 'react';
 import { GlobalContext } from '../context/Context';
-import { TfiWrite } from 'react-icons/tfi';
+import { HiMiniPencilSquare } from 'react-icons/hi2';
+import { GrDocumentText } from 'react-icons/gr';
 
 export default function Search() {
   const [searchText, setSearchText] = useState('');
 
-  const { fetchBlogs, navigation } = useContext(GlobalContext);
+  const {
+    searchResults,
+    setSearchResults,
+    hasMore,
+    setHasMore,
+    fetchBlogs,
+    navigation,
+  } = useContext(GlobalContext);
 
   const changeSearchText = (e) => {
     setSearchText(e.target.value);
+    if (searchResults.length > 0) setSearchResults([]);
+    if (!hasMore) setHasMore(true);
   };
 
   const submitSearchHandler = async (e) => {
     e.preventDefault();
-    setSearchText('');
+
     try {
+      window.localStorage.setItem('searchQuery', searchText);
       fetchBlogs(`http://localhost:8000/api/blogs/?search=${searchText}`);
-      navigation('/results');
+      navigation(`/search`);
     } catch (error) {
       console.log(error);
     }
@@ -38,8 +49,12 @@ export default function Search() {
           />
         </div>
         <div className='search-bar-buttons'>
+          <button type='button' onClick={() => navigation('/your-blogs')}>
+            <GrDocumentText />
+            <span>Your blogs</span>
+          </button>
           <button type='button' onClick={() => navigation('/writeIn')}>
-            <TfiWrite />
+            <HiMiniPencilSquare />
             <span>Write a blog</span>
           </button>
         </div>

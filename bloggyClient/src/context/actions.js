@@ -8,3 +8,5 @@ export const SET_SAVED_BLOGS = 'SET_SAVED_BLOGS';
 export const SET_HAS_MORE = 'SET_HAS_MORE';
 export const SET_NEXT_PAGE = 'SET_NEXT_PAGE';
 export const SET_SEARCH_RESULTS = 'SET_SEARCH_RESULTS';
+export const SET_DRAFTS = 'SET_DRAFTS';
+export const SET_PUBLISHED = 'SET_PUBLISHED';

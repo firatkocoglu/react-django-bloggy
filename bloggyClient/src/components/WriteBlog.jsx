@@ -1,16 +1,21 @@
 import axios from 'axios';
 import { useContext, useEffect, useState } from 'react';
 import { GlobalContext } from '../context/Context';
+import { useLocation } from 'react-router-dom';
 
 const WriteBlog = () => {
   const [categories, setCategories] = useState([]);
 
   const { session, user, navigation } = useContext(GlobalContext);
 
+  const { state } = useLocation();
+
   const [fields, setFields] = useState({
-    title: '',
-    content: '',
-    category_id: '',
+    title: state?.draft[0].title ? state.draft[0].title : '',
+    content: state?.draft[0].content ? state.draft[0].content : '',
+    category_id: state?.draft[0]?.category?.id
+      ? state.draft[0].category.id
+      : '',
   });
 
   const { title, content, category_id } = fields;
@@ -69,13 +74,35 @@ const WriteBlog = () => {
     postBlog();
   };
 
+  const saveDraftHandler = async () => {
+    const response = await axios.post(
+      'http://localhost:8000/api/drafts/',
+      {
+        user_id: user.id,
+        title: title,
+        content: content,
+        category_id: category_id || 6, //6 is the id of React Category. If user does not provide
+        //an ID then the default value would be 6
+      },
+      {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': session,
+        },
+      }
+    );
+    navigation('/home');
+    console.log(response);
+  };
+
   return (
     <section className='write-section'>
       <div className='writeIn-header'>
         <h1>Write a blog</h1>
       </div>
       <div className='blog-form'>
-        <form onSubmit={blogSubmitHandler}>
+        <form>
           <div className='form-input'>
             <label htmlFor='title'>Title</label>
             <input
@@ -85,6 +112,7 @@ const WriteBlog = () => {
               placeholder='Title of your blog'
               onChange={handleFieldChanges}
               value={title}
+              required
             />
           </div>
           <div className='form-input'>
@@ -117,7 +145,12 @@ const WriteBlog = () => {
             </select>
           </div>
           <div className='submit-form'>
-            <button type='submit'>Post Blog</button>
+            <button type='submit' onClick={blogSubmitHandler}>
+              Post Blog
+            </button>
+            <button type='button' onClick={saveDraftHandler}>
+              Save Draft
+            </button>
           </div>
         </form>
       </div>

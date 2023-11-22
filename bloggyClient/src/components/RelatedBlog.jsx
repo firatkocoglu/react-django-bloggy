@@ -1,18 +1,12 @@
 /* eslint react/prop-types: 0 */
 
 import { useContext } from 'react';
-import { BsBookmarkPlus, BsFillBookmarkDashFill } from 'react-icons/bs';
 import { GlobalContext } from '../context/Context';
 
 const RelatedBlog = ({ blog, setNavigationID }) => {
-  const { saveBlog, savedBlogs, deleteBlog, navigation } =
-    useContext(GlobalContext);
+  const { navigation } = useContext(GlobalContext);
 
-  const isBlogSaved = savedBlogs.filter(
-    (savedBlog) => savedBlog.blog.id === blog.id
-  );
-
-  const { id, title, content, user, date } = blog;
+  const { id, title, user, date } = blog;
 
   const blogNavigationHandler = (id) => {
     setNavigationID(id);
@@ -36,6 +30,8 @@ const RelatedBlog = ({ blog, setNavigationID }) => {
             <span>
               {user.first_name} {user.last_name}
             </span>
+          </div>
+          <div className='related-blog-date'>
             <span>
               {new Date(date).toLocaleString('en-GB', {
                 year: 'numeric',
@@ -44,31 +40,7 @@ const RelatedBlog = ({ blog, setNavigationID }) => {
               })}
             </span>
           </div>
-          <div className='blog-save'>
-            {isBlogSaved.length > 0 ? (
-              <button
-                type='button'
-                onClick={() => deleteBlog(isBlogSaved[0].id)}
-              >
-                <BsFillBookmarkDashFill />
-              </button>
-            ) : (
-              <button
-                type='button'
-                onClick={() => {
-                  saveBlog(id);
-                }}
-              >
-                <BsBookmarkPlus />
-              </button>
-            )}
-          </div>
         </div>
-      </div>
-      <div className='related-blog-content'>
-        <p onClick={() => blogNavigationHandler(id)}>
-          {content.substring(0, 100)}...
-        </p>
       </div>
     </article>
   );

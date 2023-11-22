@@ -9,9 +9,14 @@ const SavedBlogs = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetchSavedBlogs(setIsLoading);
+    loadSavedBlogs();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const loadSavedBlogs = async () => {
+    await fetchSavedBlogs();
+    setIsLoading(false);
+  };
 
   return (
     <div className='saved-blogs-section'>
@@ -21,16 +26,19 @@ const SavedBlogs = () => {
       <div className='saved-blogs'>
         {isLoading && <Loading />}
         <ul className='saved-blogs-list'>
-          {savedBlogs.map((blog) => {
-            return (
-              <li key={blog.id}>
-                <Link>{blog.blog.title}</Link>
-              </li>
-            );
-          })}
+          {savedBlogs
+            .slice(-5)
+            .reverse()
+            .map((blog) => {
+              return (
+                <li key={blog.id}>
+                  <Link>{blog.blog.title}</Link>
+                </li>
+              );
+            })}
         </ul>
         <div className='all-saved-blogs'>
-          <a href='#'>See all saved blogs</a>
+          <Link to='/all-saved'>See all</Link>
         </div>
       </div>
     </div>

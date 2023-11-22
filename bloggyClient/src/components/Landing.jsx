@@ -29,12 +29,6 @@ const Landing = () => {
           </Link>
         </div>
       </section>
-      <section className='topics-section'>
-        <div className='topics-header'>
-          <h3>Talk about what you are interested in most.</h3>
-        </div>
-        <div className='topics'></div>
-      </section>
     </>
   );
 };

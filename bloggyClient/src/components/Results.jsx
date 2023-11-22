@@ -11,13 +11,14 @@ const Results = () => {
     useContext(GlobalContext);
 
   useEffect(() => {
-    //FETCH BLOGS ONLY IF THERE ARE FOLLOWING PAGES
-    if (hasMore) fetchBlogs(nextPage);
+    console.log(nextPage);
 
+    const searchQuery = window.localStorage.getItem('searchQuery');
+    fetchBlogs(`http://localhost:8000/api/blogs/?search=${searchQuery}`);
+
+    //FETCH BLOGS ONLY IF THERE ARE FOLLOWING PAGES
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  console.log(searchResults);
 
   return (
     <section className='results-section'>

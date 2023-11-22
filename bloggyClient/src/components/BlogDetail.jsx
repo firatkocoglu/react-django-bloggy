@@ -72,8 +72,10 @@ const BlogDetail = () => {
         },
       })
       .then((response) => {
-        console.log(response);
-        setRelatedBlogs([...response.data.results]);
+        const filteredBlogs = response.data.results.filter(
+          (blog) => blog.id !== parseInt(blogID)
+        );
+        setRelatedBlogs([...filteredBlogs]);
       })
       .catch((error) => {
         console.log(error);
@@ -127,16 +129,18 @@ const BlogDetail = () => {
       </section>
       <section className='related-blogs-section'>
         <h1>You might also be interested in</h1>
-        {isLoading && <Loading />}
-        {relatedBlogs.map((blog) => {
-          return (
-            <RelatedBlog
-              blog={blog}
-              key={blog.id}
-              setNavigationID={setNavigationID}
-            />
-          );
-        })}
+        <div className='related-blogs'>
+          {isLoading && <Loading />}
+          {relatedBlogs.map((blog) => {
+            return (
+              <RelatedBlog
+                blog={blog}
+                key={blog.id}
+                setNavigationID={setNavigationID}
+              />
+            );
+          })}
+        </div>
       </section>
     </>
   );

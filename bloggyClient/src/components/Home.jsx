@@ -1,6 +1,5 @@
 import { useEffect, useContext } from 'react';
 import { GlobalContext } from '../context/Context';
-import Search from './Search';
 import Blogs from './Blogs';
 import Visits from './Visits';
 import SavedBlogs from './SavedBlogs';
@@ -18,7 +17,6 @@ const Home = () => {
 
   return (
     <>
-      <Search />
       <div className='home-main'>
         <div className='home-left'>
           <Blogs />{' '}
