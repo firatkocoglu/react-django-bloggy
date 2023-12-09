@@ -847,3 +847,26 @@ input:focus {
 }
 
 /* NOTIFICATION  */
+
+/* NOT FOUND */
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 80vh;
+}
+
+.not-found {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  column-gap: 50px;
+}
+
+.not-found-image img {
+  border-radius: 50%;
+  width: 200px;
+  height: 200px;
+}
+
+/* NOT FOUND */

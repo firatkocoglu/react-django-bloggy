@@ -9,6 +9,7 @@ import Profile from './Profile';
 import AllSavedBlogs from './AllSavedBlogs';
 import YourBlogs from './YourBlogs';
 import ResetPassword from './ResetPassword';
+import NotFound from './NotFound';
 
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
@@ -40,6 +41,7 @@ function App() {
             <Route path='/profile' element={<Profile />} />
             <Route path='/all-saved' element={<AllSavedBlogs />} />
             <Route path='/your-blogs' element={<YourBlogs />} />
+            <Route path='*' element={<NotFound />} />
           </Routes>
         </GlobalContextProvider>
       </BrowserRouter>
