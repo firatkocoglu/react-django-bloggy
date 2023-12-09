@@ -3,9 +3,10 @@ import { GlobalContext } from '../context/Context';
 import Blogs from './Blogs';
 import Visits from './Visits';
 import SavedBlogs from './SavedBlogs';
+import Notification from './Notification';
 
 const Home = () => {
-  const { session, navigation } = useContext(GlobalContext);
+  const { session, navigation, notification } = useContext(GlobalContext);
 
   useEffect(() => {
     //IF THERE IS NO VALID TOKEN RETURN TO LANDING PAGE
@@ -17,7 +18,7 @@ const Home = () => {
 
   return (
     <>
-      <div className='home-main'>
+      <section className='home-main'>
         <div className='home-left'>
           <Blogs />{' '}
         </div>
@@ -25,7 +26,8 @@ const Home = () => {
           <Visits />
           <SavedBlogs />
         </div>
-      </div>
+        {notification.message && <Notification />}
+      </section>
     </>
   );
 };

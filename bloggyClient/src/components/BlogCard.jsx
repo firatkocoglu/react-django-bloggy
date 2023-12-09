@@ -1,12 +1,12 @@
 /* eslint react/prop-types: 0 */
 
 import { BsBookmarkPlus, BsFillBookmarkDashFill } from 'react-icons/bs';
-import default_avatar from '../assets/default_avatar.png';
 import { useContext } from 'react';
 import { GlobalContext } from '../context/Context';
+import Markdown from 'react-markdown';
 
 export function BlogCard({ id, title, content, user, category, date }) {
-  const { saveBlog, deleteBlog, savedBlogs, navigation } =
+  const { saveBlog, deleteSavedBlog, savedBlogs, navigation } =
     useContext(GlobalContext);
 
   const blogClickHandler = (id) => {
@@ -14,6 +14,10 @@ export function BlogCard({ id, title, content, user, category, date }) {
   };
 
   const isBlogSaved = savedBlogs.filter((blog) => blog.blog.id === id);
+
+  const avatar = user.avatar.includes('http://')
+    ? user.avatar.substring(21)
+    : user.avatar;
 
   return (
     <article key={id} className='blog'>
@@ -27,7 +31,11 @@ export function BlogCard({ id, title, content, user, category, date }) {
           {title}
         </h1>
         <div className='author'>
-          <img src={default_avatar} alt='web-talk-avatar' className='avatar' />
+          <img
+            src={`http://127.0.0.1:8000${avatar}`}
+            alt='web-talk-avatar'
+            className='avatar'
+          />
           <h4>
             {user.first_name} {user.last_name}
           </h4>
@@ -39,7 +47,9 @@ export function BlogCard({ id, title, content, user, category, date }) {
           blogClickHandler(id);
         }}
       >
-        <p>{content.substring(0, 250)}...</p>
+        <p>
+          <Markdown>{content.substring(0, 250) + '...'}</Markdown>
+        </p>
       </div>
       <div className='blog-footer'>
         <div className='blog-info'>
@@ -54,7 +64,7 @@ export function BlogCard({ id, title, content, user, category, date }) {
         </div>
         <div className='blog-save'>
           {isBlogSaved.length > 0 ? (
-            <button onClick={() => deleteBlog(isBlogSaved[0].id)}>
+            <button onClick={() => deleteSavedBlog(isBlogSaved[0].id)}>
               <BsFillBookmarkDashFill />
             </button>
           ) : (

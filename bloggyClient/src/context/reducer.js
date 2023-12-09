@@ -11,6 +11,7 @@ import {
   SET_SEARCH_RESULTS,
   SET_DRAFTS,
   SET_PUBLISHED,
+  SET_NOTIFICATION,
 } from './actions';
 
 export const GlobalReducer = (state, action) => {
@@ -116,6 +117,14 @@ export const GlobalReducer = (state, action) => {
     return {
       ...state,
       published: [...action.payload],
+    };
+  }
+
+  if (action.type === SET_NOTIFICATION) {
+    console.log(action.payload);
+    return {
+      ...state,
+      notification: { ...action.payload },
     };
   }
 };

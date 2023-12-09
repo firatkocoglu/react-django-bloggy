@@ -7,7 +7,7 @@ import Loading from './Loading';
 const Visits = () => {
   const visits_url = 'http://localhost:8000/api/visits';
 
-  const { session } = useContext(GlobalContext);
+  const { session, setNotification } = useContext(GlobalContext);
 
   const [visits, setVisits] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -33,6 +33,26 @@ const Visits = () => {
     }
   };
 
+  const clearHistory = async () => {
+    try {
+      const response = await axios.delete(visits_url, {
+        withCredentials: true,
+        headers: {
+          'X-CSRFToken': session,
+        },
+      });
+      if (response.status === 200) {
+        setVisits([]);
+        setNotification({
+          result: 'Success',
+          message: 'History cleared.',
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <section className='visits-section'>
       <div className='visits-header'>
@@ -50,6 +70,9 @@ const Visits = () => {
             );
           })}
         </ul>
+        <div className='clear-history'>
+          <button onClick={clearHistory}>Clear History</button>
+        </div>
       </div>
     </section>
   );

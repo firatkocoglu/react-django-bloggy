@@ -3,7 +3,6 @@
 import { useState, useContext, useEffect } from 'react';
 import { GlobalContext } from '../context/Context';
 import axios from 'axios';
-import default_avatar from '../assets/default_avatar.png';
 
 const Comments = ({ blog_id, navigationID }) => {
   const [comment, setComment] = useState('');
@@ -121,7 +120,7 @@ const Comments = ({ blog_id, navigationID }) => {
             <div className='comment-info-container'>
               <div className='author-image'>
                 <img
-                  src={default_avatar}
+                  src={`http://127.0.0.1:8000${author.avatar}`}
                   alt='Web Talk Blog'
                   className='avatar'
                 />

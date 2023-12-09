@@ -1,7 +1,5 @@
 import { useContext } from 'react';
-import logo from '../assets/web-talks-logo.png';
-import default_avatar from '../assets/default_avatar.png';
-
+import logo from '../assets/web-talks-logo.jpeg';
 import { Link } from 'react-router-dom';
 import Search from './Search';
 import { GlobalContext } from '../context/Context';
@@ -77,16 +75,18 @@ const Navbar = () => {
             </>
           ) : (
             <>
-              <p className='profile'>
-                <img
-                  src={default_avatar}
-                  alt='web-talk-avatar'
-                  className='avatar'
-                />
-                <Link to='/profile'>
-                  {user.first_name ? user.first_name : user.username}
-                </Link>
-              </p>
+              <li>
+                <p className='profile'>
+                  <img
+                    src={`http://127.0.0.1:8000${user.avatar}`}
+                    alt='web-talk-avatar'
+                    className='avatar'
+                  />
+                  <Link to='/profile'>
+                    {user.first_name ? user.first_name : user.username}
+                  </Link>
+                </p>
+              </li>
               <li>
                 <Link to='/sign-out' onClick={logout}>
                   Sign Out

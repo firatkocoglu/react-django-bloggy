@@ -32,7 +32,7 @@ const SavedBlogs = () => {
             .map((blog) => {
               return (
                 <li key={blog.id}>
-                  <Link>{blog.blog.title}</Link>
+                  <Link to={`/blogs/${blog.blog.id}`}>{blog.blog.title}</Link>
                 </li>
               );
             })}

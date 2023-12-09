@@ -16,19 +16,23 @@ const AllSavedBlogs = () => {
         <h1>All Saved Blogs</h1>
       </div>
       <div className='all-saved-blogs'>
-        {savedBlogs.map((blog) => {
-          return (
-            <BlogCard
-              key={blog.blog.id}
-              id={blog.blog.id}
-              title={blog.blog.title}
-              content={blog.blog.content}
-              date={blog.blog.date}
-              user={blog.blog.user}
-              category={blog.blog.category}
-            />
-          );
-        })}
+        {savedBlogs.length === 0 ? (
+          <div>You have no saved blogs yet.</div>
+        ) : (
+          savedBlogs.map((blog) => {
+            return (
+              <BlogCard
+                key={blog.blog.id}
+                id={blog.blog.id}
+                title={blog.blog.title}
+                content={blog.blog.content}
+                date={blog.blog.date}
+                user={blog.blog.user}
+                category={blog.blog.category}
+              />
+            );
+          })
+        )}
       </div>
     </section>
   );

@@ -1,9 +1,11 @@
 import { useContext, useEffect, useState } from 'react';
 import { GlobalContext } from '../context/Context';
 import axios from 'axios';
+import Notification from './Notification';
 
 const Profile = () => {
-  const { session, user } = useContext(GlobalContext);
+  const { session, user, fetchUser, notification, setNotification } =
+    useContext(GlobalContext);
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
 
   const [userFields, setUserFields] = useState({
@@ -13,7 +15,21 @@ const Profile = () => {
     last_name: '',
     bio: '',
     location: '',
+    avatar: '',
   });
+
+  //SET AVATAR VARIABLE GLOBALLY FOR MULTIPLE USES
+  const avatar = document.getElementById('avatar');
+
+  useEffect(() => {
+    fetchUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    setUserFields({ ...userFields, ...user });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const inputChangeHandler = (e) => {
     setUserFields({ ...userFields, [e.target.name]: e.target.value });
@@ -22,27 +38,59 @@ const Profile = () => {
     }
   };
 
-  const profileSubmitHandler = (e) => {
-    e.preventDefault();
-    const response = axios.put(
-      'http://localhost:8000/api/updateuser/',
-      {
-        email: userFields.email ? userFields.email : user.email,
-        first_name: userFields.first_name
-          ? userFields.first_name
-          : user.first_name,
-        last_name: userFields.last_name ? userFields.last_name : user.last_name,
-        bio: userFields.bio ? userFields.bio : user.bio,
-        location: userFields.location ? userFields.location : user.location,
-      },
-      {
+  const changeAvatarHandler = (e) => {
+    setUserFields({
+      ...userFields,
+      avatar: URL.createObjectURL(e.target.files[0]),
+    });
+
+    if (isButtonDisabled) {
+      setIsButtonDisabled(false);
+    }
+  };
+
+  const deleteAvatarHandler = async () => {
+    try {
+      await axios.get('http://localhost:8000/api/deleteavatar/', {
         withCredentials: true,
-        headers: {
-          'X-CSRFToken': session,
+      });
+      //RESET AVATAR PICTURE FILE UPLOAD
+      avatar.value = null;
+      fetchUser();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const profileSubmitHandler = async (e) => {
+    e.preventDefault();
+    let formData = new FormData(e.currentTarget);
+    if (avatar.files.length === 0) {
+      formData.delete('avatar');
+    }
+    const data = Object.fromEntries(formData);
+
+    try {
+      await axios.patch(
+        'http://localhost:8000/api/updateuser/',
+        {
+          ...data,
         },
-      }
-    );
-    console.log(response);
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'X-CSRFToken': session,
+          },
+        }
+      );
+
+      setNotification({ result: 'Success', message: 'Profile updated.' });
+    } catch (error) {
+      console.log(error);
+      setNotification({ result: 'Failed', message: 'Something went wrong.' });
+    }
+
     window.location.reload();
   };
 
@@ -63,7 +111,6 @@ const Profile = () => {
               type='email'
               name='email'
               id='email'
-              placeholder={user.email}
               value={userFields.email}
               onChange={inputChangeHandler}
             />
@@ -74,7 +121,6 @@ const Profile = () => {
               type='text'
               name='username'
               id='username'
-              placeholder={user.username}
               value={userFields.username}
               onChange={inputChangeHandler}
               disabled
@@ -86,7 +132,6 @@ const Profile = () => {
               type='text'
               name='first_name'
               id='first_name'
-              placeholder={user.first_name}
               value={userFields.first_name}
               onChange={inputChangeHandler}
             />
@@ -97,7 +142,6 @@ const Profile = () => {
               type='text'
               name='last_name'
               id='last_name'
-              placeholder={user.last_name}
               value={userFields.last_name}
               onChange={inputChangeHandler}
             />
@@ -108,7 +152,6 @@ const Profile = () => {
               type='text'
               name='bio'
               id='bio'
-              placeholder={user.bio}
               value={userFields.bio}
               onChange={inputChangeHandler}
             />
@@ -119,10 +162,24 @@ const Profile = () => {
               type='text'
               name='location'
               id='location'
-              placeholder={user.location}
               value={userFields.location}
               onChange={inputChangeHandler}
             />
+          </div>
+          <div className='profile-form-input'>
+            <label htmlFor='avatar'>Avatar</label>
+            <input
+              type='file'
+              name='avatar'
+              id='avatar'
+              accept='image/png, image/jpeg'
+              onChange={changeAvatarHandler}
+            />
+            <div className='delete-avatar'>
+              <button type='button' onClick={deleteAvatarHandler}>
+                Delete Avatar
+              </button>
+            </div>
           </div>
           <div className='submit-form'>
             <button type='submit' disabled={isButtonDisabled}>
@@ -131,6 +188,7 @@ const Profile = () => {
           </div>
         </form>
       </div>
+      {notification.message && <Notification />}
     </section>
   );
 };

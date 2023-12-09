@@ -21,7 +21,9 @@ const Landing = () => {
           </div>
           <div className='landing-paragraph'>
             <p>
-              Discover web world. Discuss new ways to improve web. Talk web.
+              <span>
+                Discover the best ideas and approaches about web development.
+              </span>
             </p>
           </div>
           <Link to='/sign-in'>

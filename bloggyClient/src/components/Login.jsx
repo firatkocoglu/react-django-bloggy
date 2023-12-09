@@ -49,7 +49,6 @@ const Login = () => {
       )
       .then(function (response) {
         console.log(response);
-
         //SET GLOBAL COOKIE STATE
         let csrf_cookie = new Cookie().get('csrftoken');
         setSession(csrf_cookie);
@@ -100,11 +99,7 @@ const Login = () => {
   return (
     <section className='login-register-section'>
       <div className='login-register'>
-        <form
-          action=''
-          className='login-register-form'
-          onSubmit={submitHandler}
-        >
+        <form className='login-register-form' onSubmit={submitHandler}>
           <div className='credentials-header'>
             <h1>Login to your Web Talk account</h1>
           </div>
@@ -154,7 +149,8 @@ const Login = () => {
               Don&apos;t have an account? <a href='/register'>Register</a>.
             </p>
             <p>
-              Forgot password? <a href='/register'>Reset your password</a>.
+              Forgot password? <a href='/reset-password'>Reset your password</a>
+              .
             </p>
           </div>
         </form>

@@ -5,7 +5,7 @@ import axios from 'axios';
 import Loading from './Loading.jsx';
 import Comments from './Comments.jsx';
 import RelatedBlog from './RelatedBlog.jsx';
-import default_avatar from '../assets/default_avatar.png';
+import Markdown from 'react-markdown';
 
 const BlogDetail = () => {
   const { session } = useContext(GlobalContext);
@@ -91,7 +91,7 @@ const BlogDetail = () => {
           <div className='blog-detail-author'>
             <div className='author-image'>
               <img
-                src={default_avatar}
+                src={`http://127.0.0.1:8000${user.avatar}`}
                 alt='Web Talk Blog'
                 className='avatar'
               />
@@ -120,7 +120,7 @@ const BlogDetail = () => {
           </div>
         </div>
         <div className='blog-detail-content'>
-          <p>{content}</p>
+          <Markdown>{content}</Markdown>
         </div>
       </section>
       <section className='comments-section'>

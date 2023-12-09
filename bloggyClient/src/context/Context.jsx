@@ -15,6 +15,7 @@ import {
   SET_SEARCH_RESULTS,
   SET_DRAFTS,
   SET_PUBLISHED,
+  SET_NOTIFICATION,
 } from './actions';
 import Cookie from 'universal-cookie';
 import axios from 'axios';
@@ -43,6 +44,10 @@ const defaultState = {
   searchResults: [],
   drafts: [],
   published: [],
+  notification: {
+    result: '',
+    message: '',
+  },
 };
 
 export const GlobalContext = createContext(defaultState);
@@ -77,7 +82,7 @@ export const GlobalContextProvider = ({ children }) => {
     //THIS MIGHT BE NECESSARY IN ORDER TO FETCH DIFFERENT TYPE OF REQUESTS
     //(DIFFERENT TYPE OF REQUESTS COULD BE ALL THE BLOGS OR ONLY FILTERED BLOGS)
     setNextPage('');
-    axios
+    await axios
       .get(url, {
         withCredentials: true,
         headers: {
@@ -121,7 +126,7 @@ export const GlobalContextProvider = ({ children }) => {
 
   const saveBlog = async (id) => {
     try {
-      const response = await axios.post(
+      await axios.post(
         'http://localhost:8000/api/savedblogs/',
         {
           blog_id: id,
@@ -134,27 +139,29 @@ export const GlobalContextProvider = ({ children }) => {
           },
         }
       );
-      console.log(response);
+      setNotification({ result: 'Success', message: 'Blog saved.' });
       fetchSavedBlogs();
     } catch (error) {
       console.log(error);
+      setNotification({ result: 'Failed', message: 'Something went wrong.' });
     }
   };
 
-  const deleteBlog = async (id) => {
+  const deleteSavedBlog = async (id) => {
     try {
-      const response = await axios.delete(
-        `http://localhost:8000/api/savedblogs/${id}/`,
-        {
-          withCredentials: true,
-          headers: {
-            'X-CSRFToken': state.session,
-          },
-        }
-      );
-      console.log(response);
+      await axios.delete(`http://localhost:8000/api/savedblogs/${id}/`, {
+        withCredentials: true,
+        headers: {
+          'X-CSRFToken': state.session,
+        },
+      });
+      setNotification({
+        result: 'Success',
+        message: 'Blog removed from saved blogs.',
+      });
       fetchSavedBlogs();
     } catch (error) {
+      setNotification({ result: 'Failed', message: 'Something went wrong.' });
       console.log(error);
     }
   };
@@ -260,6 +267,13 @@ export const GlobalContextProvider = ({ children }) => {
     });
   };
 
+  const setNotification = (notification) => {
+    dispatch({
+      type: SET_NOTIFICATION,
+      payload: notification,
+    });
+  };
+
   return (
     <GlobalContext.Provider
       value={{
@@ -282,7 +296,7 @@ export const GlobalContextProvider = ({ children }) => {
         setSavedBlogs,
         fetchSavedBlogs,
         saveBlog,
-        deleteBlog,
+        deleteSavedBlog,
         hasMore: state.hasMore,
         setHasMore,
         nextPage: state.nextPage,
@@ -293,6 +307,8 @@ export const GlobalContextProvider = ({ children }) => {
         published: state.published,
         setDrafts,
         setPublished,
+        notification: state.notification,
+        setNotification,
       }}
     >
       {children}
