@@ -7,6 +7,7 @@ from .views import (
     logout_view,
     get_user_view,
     update_user_view,
+    set_avatar_default,
     CategoryViewSet,
     BlogViewSet,
     CommentViewSet,
@@ -30,6 +31,7 @@ urlpatterns = [
     path("logout/", logout_view, name="logout-view"),
     path("getuser/", get_user_view, name="get-user-view"),
     path("updateuser/", update_user_view, name="update-user-view"),
+    path("deleteavatar/", set_avatar_default, name="delete-avatar"),
     path("", include(router.urls)),
     path("", include(blog_router.urls)),
 ]

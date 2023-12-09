@@ -8,7 +8,9 @@ from django.utils.timezone import now
 class UserProfile(AbstractUser):
     bio = models.TextField(blank=True)
     location = models.CharField(max_length=255, blank=True)
-    avatar = models.ImageField(default="default_avatar.jpg", upload_to="profile_pics")
+    avatar = models.ImageField(
+        default="/profile_pics/default_avatar.png", upload_to="profile_pics"
+    )
 
 
 class Category(models.Model):

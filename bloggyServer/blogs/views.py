@@ -99,12 +99,34 @@ def update_user_view(request):
         )
 
     user = get_object_or_404(UserProfile, id=request.user.id)
-
-    serialized_user = UserProfileSerializer(user, request.data, partial=True)
+    print(request.data.dict())
+    serialized_user = UserProfileSerializer(user, request.data.dict(), partial=True)
     serialized_user.is_valid(raise_exception=True)
     serialized_user.update(user, request.data)
 
     return Response(serialized_user.data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+def set_avatar_default(request):
+    if not request.user.is_authenticated:
+        return Response(
+            {"detail": "Not authorized"}, status=status.HTTP_401_UNAUTHORIZED
+        )
+
+    user = get_object_or_404(UserProfile, id=request.user.id)
+    user.avatar = "../media/profile_pics/default_avatar.png"
+    user.save()
+
+    return Response(
+        {"detail": "Profile picture set to default."}, status=status.HTTP_200_OK
+    )
+
+
+@api_view(["GET"])
+def reset_password_confirm(request, uid, token):
+    print(uid, token)
+    return Response("fro")
 
 
 # SESSION BASED AUTHENTICATION VIEWS - LOGIN AND LOGOUT
@@ -191,6 +213,13 @@ class VisitViewSet(ModelViewSet):
         serialized_data.save()
         return Response(serialized_data.data, status=status.HTTP_201_CREATED)
 
+    def delete(self, request):
+        visits = Visit.objects.filter(user_id=request.user.id)
+        self.perform_destroy(visits)
+        return Response(
+            {"detail": "Visits successfully deleted."}, status=status.HTTP_200_OK
+        )
+
 
 # VISIT OPERATIONS VIEWS
 
@@ -236,15 +265,6 @@ class BlogViewSet(ModelViewSet):
         blog = get_object_or_404(Blog, id=pk)
         serialized_blog = BlogSerializer(blog)
         return Response(serialized_blog.data, status=status.HTTP_200_OK)
-
-    # def list(self, request):
-    #     print(request)
-    #     serialized_blogs = BlogSerializer(self.queryset, many=True)
-    #     return Response(serialized_blogs.data, status=status.HTTP_200_OK)
-
-    #     # # if page is not None:
-    #     # serialized_blogs = BlogSerializer(self.queryset, many=True)
-    #     # return self.get_paginated_response(serialized_blogs.data)
 
     def create(self, request):
         blog_data = {"user_id": request.user.id, **request.data}
